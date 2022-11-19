@@ -40,7 +40,7 @@ So 435.[^435]
 
 [^435]: I thought I could do it more quickly in my head than by using a calculator. That was a mistake.
 
-### Ch2 Q4.
+### Ch2 Q4
 
 > Suppose Bob receives a messages signed using a digital signature scheme with Alice's secret signing key. Does it prove that Alice saw the message and chose to sign.
 
@@ -59,7 +59,7 @@ No. There are attacks on ciphers that do not require key recovery. The malleabil
 
 I don't really understand this question. It depends on how many keys will be created this way. So my answer could be 128 (under the assumption that the rest of the crypto system is no weaker than the key).
 
-If, however you are going to be generating anything close to 2^128 keys, then then _n_ should be 256.
+If, however you are going to be generating anything close to 2^128 keys, then _n_ should be 256.
 
 ## General
 
@@ -67,17 +67,18 @@ If, however you are going to be generating anything close to 2^128 keys, then th
 
 > Suppose you read about RSA encryption and wanted to find it's standard specification. Where would you look?
 
+[RFC 8017](https://www.rfc-editor.org/rfc/rfc8017).
+
 ### Evaluate libraries
 
 > Find two libraries for each of RSA, TLS/SSL, and AEAD. Evaluate the maturity each library, and skim the code. What about the library structure makes sense? How is their documentation? These links may help:
->    - https://cryptography.rs/
->    - https://lib.rs/ (librs is equivalent to crates.io, with a different interface)
-
+>
+> - https://cryptography.rs/
+> - https://lib.rs/ (librs is equivalent to crates.io, with a different interface)
 
 ### Benchmark
 
 > Benchmark the speed of an algorithm in the two different implementations with [Criterion](https://lib.rs/crates/criterion).
-
 
 ### Tweak signature
 
@@ -86,6 +87,16 @@ If, however you are going to be generating anything close to 2^128 keys, then th
 ### Hard math
 
 > You want to understand a paper on a new polynomial commitment scheme, but you've been trying for more than an hour, and the math is over your head. What do you do?
+
+A lot depends on how badly I want to understand the paper and at what depth.
+There are plenty of circumstances where I will trust the authors and the reviewers that the math does what it says it does.
+
+But I might also
+
+- look through what the paper cites and work backwards;
+- pull out my copy of _Introduction to Mathematical Cryptography_ or _Algebra for Cryptologists_;
+- go to Wikipedia to get some overview;
+- Ask my kid for help, particular if it involves linear algebra.
 
 ### Vigenère
 
