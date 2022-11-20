@@ -10,7 +10,7 @@
 
 use std::collections::HashMap;
 
-const DEFAULT_ABC: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+pub const DEFAULT_ABC: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /// Errors happen. We might report them.
 pub enum Error {
@@ -25,6 +25,9 @@ pub enum Error {
 
     /// Key has chars not in alphabet
     ErrorBadKeyChar,
+
+    /// Alphabet is too short
+    ErrorShortABC,
 }
 
 type AtoIMap = HashMap<char, usize>;
@@ -73,6 +76,7 @@ impl Alphabet {
 }
 
 impl Alphabet {
+    /// Creates an Alphabet using the [DEFAULT_ABC]
     pub fn new() -> Self {
         match Self::try_from(DEFAULT_ABC.to_string()) {
             Err(_) => panic!("default should not error"),
@@ -89,6 +93,7 @@ impl Alphabet {
         let c = self.itoa_map.get(&new_pos).unwrap();
         *c
     }
+    #[inline]
     fn sub(&self, a: char, b: char) -> char {
         self.add(a, self.inv(b))
     }
@@ -107,7 +112,7 @@ impl TryFrom<String> for Alphabet {
     /// Will Error if s contains duplicate characters or if s is shorter than 2
     fn try_from(s: String) -> Result<Self, Error> {
         if s.len() < 2 {
-            return Err(Error::ErrorOps);
+            return Err(Error::ErrorShortABC);
         }
         let value = s.clone();
         let length = s.len();
@@ -131,8 +136,19 @@ pub struct Vigenere {
 }
 
 impl Vigenere {
+    fn valid_key_or_err(key: &str, alphabet: &Alphabet) -> Result<(), Error> {
+        if key.is_empty() {
+            return Err(Error::ErrorShortKey)
+        }
+        if !alphabet.is_key_valid(key) {
+            return Err(Error::ErrorBadKeyChar)
+        }
+        Ok(())
+    }
+
     pub fn new(key: &str) -> Result<Self, Error> {
         let alphabet: Alphabet = Alphabet::new();
+        Self::valid_key_or_err(key, &alphabet)?;
         Ok(Self {
             alphabet,
             key: key.into(),
@@ -141,12 +157,7 @@ impl Vigenere {
 
     pub fn new_with_alphabet(key: &str, alphabet: String) -> Result<Self, Error> {
         let alphabet: Alphabet = Alphabet::try_from(alphabet)?;
-        if key.is_empty() {
-            return Err(Error::ErrorShortKey);
-        }
-        if !alphabet.is_key_valid(key) {
-            return Err(Error::ErrorBadKeyChar);
-        }
+        Self::valid_key_or_err(key, &alphabet)?;
         Ok(Self {
             key: key.to_string(),
             alphabet,
