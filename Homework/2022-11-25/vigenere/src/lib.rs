@@ -14,6 +14,7 @@ use unicode_segmentation::UnicodeSegmentation;
 pub const DEFAULT_ABC: &str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /// Errors happen. We might report them.
+#[derive(Debug)]
 pub enum Error {
     /// Something bad happened
     ErrorOps,
@@ -30,7 +31,7 @@ pub enum Error {
     /// Alphabet is too short
     ErrorShortABC,
 }
-
+#[derive(Debug)]
 pub struct Key {
     value: Vec<String>,
 }
@@ -66,6 +67,7 @@ type AtoIMap = HashMap<String, usize>;
 type ItoAMap = HashMap<usize, String>;
 
 /// Alphabet is the ordered set of characters we will cope with.
+#[derive(Debug)]
 pub struct Alphabet {
     value: Vec<String>,
     length: usize,
@@ -136,7 +138,7 @@ impl Alphabet {
     // return the additive inverse of a character given the alphabet
     fn inv(&self, c: String) -> String {
         let pos = self.atoi_map.get(&c).unwrap();
-        let neg_pos = self.length - pos;
+        let neg_pos = (self.length - pos) % self.length;
         let inv_c = self.itoa_map.get(&neg_pos).unwrap();
         (*inv_c).clone()
     }
@@ -169,6 +171,7 @@ impl TryFrom<String> for Alphabet {
 }
 
 /// Vigenere is where we will put our key and alphabet
+#[derive(Debug)]
 pub struct Vigenere {
     /// The alphabet is an ordered sequence of unique characters.
     alphabet: Alphabet,
@@ -242,5 +245,60 @@ impl Vigenere {
     }
     pub fn decrypt(&self, text: &str) -> Vec<String> {
         self.crypt(text, Mode::Decrypt)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_crypt() {
+        struct TestVector {
+            name: String,
+            input: String,
+            key: String,
+            mode: Mode,
+            expected: String,
+        }
+
+        let vectors: Vec<TestVector> = vec![
+            TestVector{
+                name: "Rot13".into(),
+                input: "The quick brown fox jumped over the lazy dog.".into(),
+                key: "N".into(),
+                mode: Mode::Encrypt,
+                expected: r#"GURDHVPXOEBJASBKWHZCRQBIREGURYNMLQBT"#.into(),
+            },
+            TestVector{
+                name: "rev Rot13".into(),
+                input: "GURDH VPXOE BJASB  KWHZc RQBIR\n\t EGURY NMLQBT".into(),
+                key: "N".into(),
+                mode: Mode::Decrypt,
+                expected: "THEQUICKBROWNFOXJUMPEDOVERTHELAZYDOG".into(),
+            },
+            TestVector{
+                name: "Cracking codes with Python: Encrypt".into(),
+                input: r#"Alan Mathison Turing was a
+                        British mathematician, logician, cryptanalyst,
+                        and computer scientist."#.into(),
+                key: "Azimov".into(),
+                mode: Mode::Encrypt,
+                expected: r#"AKIZ AVTGQECI TTZUBB WZA M PMISQEVH
+                    ASPQAVTHKUOIL, NOUQDAM, KDMKTZVMZTSS,
+                    IZR XOLXGHZR RKUSITHAF."#.into(),
+            },
+        ];
+
+        for t in vectors {
+            let v = Vigenere::new(&t.key).unwrap();
+            let vec = v.crypt(&t.input, t.mode);
+            let result = vec.join("");
+            let mut expected = t.expected;
+            expected.retain(|c| c.is_alphabetic());
+
+            assert_eq!(expected, result,
+                    "Test {}:\n\tGot: {}\n\tExpect: {}",
+                t.name, result, expected);
+        }
     }
 }
