@@ -106,6 +106,13 @@ But I might also
 
 > What is a side channel attack? Is your cipher implementation constant time?
 
+Possible places for side channels
+
+- Whether a modular reduction is needed. Computing `10 + 12 % 26` may take less time than computing `10 + 22 % 26`. This could leak information about whether letters in the plaintext or key are near "A" or nearer "Z". I did not attempt to mitigate that.
+  
+- Numerical index for a letter might take more time for finding the index at near the end of the string. I attempted to address this by creating a pair of HashMaps to do that lookup instead of searching through a sequence of letters.
+
+
 ## Extra
 
 - Extra: Read [New Directions in Cryptography](https://ieeexplore.ieee.org/document/1055638).
