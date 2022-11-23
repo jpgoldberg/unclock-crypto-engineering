@@ -4,34 +4,38 @@
 use criterion::Criterion;
 use criterion::{criterion_group, criterion_main};
 
-fn mod_add_no_reduction() -> u32 {
-    let start = 0;
-    let end = 12;
+fn mod_add_no_reduction() -> usize {
+    let start: usize = 0;
+    let end: usize = 5_000;
 
     let modulus = 26;
 
     let mut c = 0;
+    let mut prev = c;
     for a in start..end {
         for b in start..end {
+            prev = c;
             c = (a + b) % modulus;
         }
     }
-    c
+    prev
 }
 
-fn mod_add_with_reduction() -> u32 {
-    let start = 13;
-    let end = 25;
+fn mod_add_with_reduction() -> usize {
+    let start: usize = 5_000;
+    let end: usize = 10_000;
 
     let modulus = 26;
 
     let mut c = 0;
+    let mut prev = c;
     for a in start..end {
         for b in start..end {
+            prev = c;
             c = (a + b) % modulus;
         }
     }
-    c
+    prev
 }
 
 fn bench_mod_add(c: &mut Criterion) {
