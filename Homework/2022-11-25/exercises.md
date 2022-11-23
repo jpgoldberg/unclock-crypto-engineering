@@ -136,16 +136,22 @@ leaks information about the letters in the key.
 
 I also tested modular addition directly in cases where the sum is less than the modulus versus cases where it is greater, and I got similar results.
 
-
-
-
-### Side channel: index in String/Vec
+### Side channel: lookup position in String/Vector
 
 Numerical index for a letter might take more time for finding the index at near the end of the string. I attempted to address this by creating a pair of HashMaps to do that lookup instead of searching through a sequence of letters.
 
-
 ## Extra
 
-- Extra: Read [New Directions in Cryptography](https://ieeexplore.ieee.org/document/1055638).
-- Extra: Consider ways to contribute what you learned this week to the [Uncloak](https://uncloak.org) knowledge graph.
+### New Directions
+
+> Extra: Read [New Directions in Cryptography](https://ieeexplore.ieee.org/document/1055638).
+
+I should reread that. I haven't (yet).
+
+### Unclock contribution
+
+> Extra: Consider ways to contribute what you learned this week to the [Uncloak](https://uncloak.org) knowledge graph.
+
+Hmm. I probably should see what is already known about modular reductions and side channels.
+But I want to think about mitigations prior to reading what the expert community has to say.
   
