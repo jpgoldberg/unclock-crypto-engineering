@@ -13,5 +13,6 @@ criterion = "0.4"
 
 
 [[bench]]
-name = "fib_benchmark"
+# name = "fib_benchmark"
+name ="key_benchmarks"
 harness = false
