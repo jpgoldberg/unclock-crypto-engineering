@@ -70,7 +70,8 @@ type ItoAMap = HashMap<usize, String>;
 #[derive(Debug)]
 pub struct Alphabet {
     value: Vec<String>,
-    length: usize,
+    modulus: usize,
+    mod_mask: Option<u8>,
     atoi_map: AtoIMap,
     itoa_map: ItoAMap,
 }
@@ -126,7 +127,10 @@ impl Alphabet {
     fn add(&self, a: String, b: String) -> String {
         let a_pos = self.atoi_map.get(&a).unwrap();
         let b_pos = self.atoi_map.get(&b).unwrap();
-        let new_pos = (a_pos + b_pos) % self.length;
+        let new_pos = match self.mod_mask {
+            Some(m) => ((a_pos + b_pos) as u8 & m) as usize,
+            _ => (a_pos + b_pos) % self.modulus,
+        };
         let c = self.itoa_map.get(&new_pos).unwrap();
         (*c).clone()
     }
@@ -138,7 +142,10 @@ impl Alphabet {
     // return the additive inverse of a character given the alphabet
     fn inv(&self, c: String) -> String {
         let pos = self.atoi_map.get(&c).unwrap();
-        let neg_pos = (self.length - pos) % self.length;
+        let neg_pos = match self.mod_mask {
+            Some(m) => ((self.modulus - pos) as u8 & m) as usize,
+            _ => (self.modulus - pos) % self.modulus,
+        };
         let inv_c = self.itoa_map.get(&neg_pos).unwrap();
         (*inv_c).clone()
     }
@@ -158,12 +165,30 @@ impl TryFrom<String> for Alphabet {
             .map(|s| s.to_string())
             .collect();
 
-        let length = value.len();
+        let modulus = value.len();
+
+        // if the modulus is a power of 2 no greater than 256,
+        // then we create a mask which is 1 less than the modulus.
+        //
+        // Eg, if modulus == 32 then mod_mask will be 0b0011111 (31)
+        let mod_mask: Option<u8>;
+        if modulus > 256 {
+            mod_mask = None;
+        } else {
+            let m = modulus as u8;
+            if (m & (m - 1)) == 0 {
+                // is power of 2
+                mod_mask = Some(m - 1);
+            } else {
+                mod_mask = None;
+            }
+        }
 
         let (atoi_map, itoa_map) = Self::build_maps(value.clone())?;
         Ok(Self {
             value,
-            length,
+            modulus,
+            mod_mask,
             atoi_map,
             itoa_map,
         })
@@ -208,8 +233,9 @@ impl Vigenere {
         })
     }
 
-    pub fn new_with_alphabet(key: &str, alphabet: String) -> Result<Self, Error> {
-        let alphabet: Alphabet = Alphabet::try_from(alphabet)?;
+    pub fn new_with_alphabet(key: &str, alphabet: &String) -> Result<Self, Error> {
+        let a = alphabet.clone();
+        let alphabet: Alphabet = Alphabet::try_from(a)?;
         Self::valid_key_or_err(key, &alphabet)?;
         Ok(Self {
             key: key.into(),
@@ -262,30 +288,32 @@ mod tests {
         }
 
         let vectors: Vec<TestVector> = vec![
-            TestVector{
+            TestVector {
                 name: "Rot13".into(),
                 input: "The quick brown fox jumped over the lazy dog.".into(),
                 key: "N".into(),
                 mode: Mode::Encrypt,
                 expected: r#"GURDHVPXOEBJASBKWHZCRQBIREGURYNMLQBT"#.into(),
             },
-            TestVector{
+            TestVector {
                 name: "rev Rot13".into(),
                 input: "GURDH VPXOE BJASB  KWHZc RQBIR\n\t EGURY NMLQBT".into(),
                 key: "N".into(),
                 mode: Mode::Decrypt,
                 expected: "THEQUICKBROWNFOXJUMPEDOVERTHELAZYDOG".into(),
             },
-            TestVector{
+            TestVector {
                 name: "Cracking codes with Python: Encrypt".into(),
                 input: r#"Alan Mathison Turing was a
                         British mathematician, logician, cryptanalyst,
-                        and computer scientist."#.into(),
+                        and computer scientist."#
+                    .into(),
                 key: "Azimov".into(),
                 mode: Mode::Encrypt,
                 expected: r#"AKIZ AVTGQECI TTZUBB WZA M PMISQEVH
                     ASPQAVTHKUOIL, NOUQDAM, KDMKTZVMZTSS,
-                    IZR XOLXGHZR RKUSITHAF."#.into(),
+                    IZR XOLXGHZR RKUSITHAF."#
+                    .into(),
             },
         ];
 
@@ -296,9 +324,77 @@ mod tests {
             let mut expected = t.expected;
             expected.retain(|c| c.is_alphabetic());
 
-            assert_eq!(expected, result,
-                    "Test {}:\n\tGot: {}\n\tExpect: {}",
-                t.name, result, expected);
+            assert_eq!(
+                expected, result,
+                "Test {}:\n\tGot: {}\n\tExpect: {}",
+                t.name, result, expected
+            );
         }
     }
+
+    #[test]
+    fn test_alphabet32() {
+        let abc32 = "012345ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        let a = Alphabet::try_from(abc32.to_string()).unwrap();
+
+        assert_eq!(a.modulus, 32);
+        assert!(a.mod_mask.is_some());
+        let mod_mask = a.mod_mask.unwrap();
+        assert_eq!(mod_mask, 0b00011111)
+    }
+
+    #[test]
+    fn test_new_with_alphabet32() {
+        let abc32 = "012345ABCDEFGHIJKLMNOPQRSTUVWXYZ".to_string();
+
+        struct TestVector {
+            name: String,
+            input: String,
+            key: String,
+            mode: Mode,
+            expected: String,
+        }
+
+        let vectors: Vec<TestVector> = vec![
+            TestVector {
+                name: "Zero key".into(),
+                input: "The quick brown fox jumped over the lazy dog.".into(),
+                key: "0".into(),
+                mode: Mode::Encrypt,
+                expected: r#"THEQUICKBROWNFOXJUMPEDOVERTHELAZYDOG"#.into(),
+            },
+            TestVector {
+                name: "Rot 16 E".into(),
+                input: "The quick brown fox jumped over the lazy dog.".into(),
+                key: "K".into(),
+                mode: Mode::Encrypt,
+                expected: r#"DXUAEYS0RB4G3V4HZE25UT4FUBDXU1QJIT4W"#.into(),
+            },
+            TestVector {
+                name: "Rot 16 D".into(),
+                input: "The quick brown fox jumped over the lazy dog.".into(),
+                key: "K".into(),
+                mode: Mode::Decrypt,
+                expected: r#"DXUAEYS0RB4G3V4HZE25UT4FUBDXU1QJIT4W"#.into(),
+            },
+
+        ];
+
+        for t in vectors {
+            let v = Vigenere::new_with_alphabet(&t.key, &abc32).unwrap();
+            let vec = v.crypt(&t.input, t.mode);
+            let result = vec.join("");
+            let mut expected = t.expected;
+            expected.retain(|c| c.is_alphabetic());
+
+            assert_eq!(
+                expected, result,
+                "Test {}:\n\tGot: {}\n\tExpect: {}",
+                t.name, result, expected
+            );
+        }
+
+
+    }
+
 }
