@@ -14,5 +14,6 @@ criterion = "0.4"
 
 [[bench]]
 # name = "fib_benchmark"
-name ="key_benchmarks"
+# name ="key_benchmarks"
+name = "mod_add_bench"
 harness = false
