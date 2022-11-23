@@ -80,6 +80,19 @@ If, however you are going to be generating anything close to 2^128 keys, then _n
 
 > Benchmark the speed of an algorithm in the two different implementations with [Criterion](https://lib.rs/crates/criterion).
 
+The documentation is for version 0.3, while the latest version is 0.4.0, which has the cli, statistical analysis, and report generation factored out to cargo-criterion.
+
+This does statistics really nicely with very intelligent sampling,
+but it is geared very much toward testing how code changes affect performance.
+The statistical comparisons it offers don't really help with identifying side
+channel attacks.
+
+Null Hypothesis Significance Tests (with 0.05 threshold) may be right in some contexts, but it is far too conservative for identifying side channels.
+A non-significant difference may very well be exploitable.
+The tool also comes tantalizingly close to offering statistical comparison between multiple functions, but it doesn't do it.
+
+Perhaps I will see about coding calling the relevant t-tests myself.
+
 ### Tweak signature
 
 >  You're implementing a [Tweakable Encryption](https://en.wikipedia.org/wiki/Disk_encryption_theory) scheme. You need to know what standard API users will expect. Find a reference for the standard API and write the function signatures for encryption and decryption.
@@ -106,11 +119,29 @@ But I might also
 
 > What is a side channel attack? Is your cipher implementation constant time?
 
-Possible places for side channels
+### Side channel: Modular Reduction
 
-- Whether a modular reduction is needed. Computing `10 + 12 % 26` may take less time than computing `10 + 22 % 26`. This could leak information about whether letters in the plaintext or key are near "A" or nearer "Z". I did not attempt to mitigate that.
-  
-- Numerical index for a letter might take more time for finding the index at near the end of the string. I attempted to address this by creating a pair of HashMaps to do that lookup instead of searching through a sequence of letters.
+Whether a modular reduction is needed. Computing `10 + 12 % 26` may take less time than computing `10 + 22 % 26`.
+
+My v0.1.0 was vulnerable to this.
+If I encrypt using a key with letters near the beginning of the alphabet, `abcdefg` versus near the end, `tuvwxyz`, I get a measurable difference in the time it takes to encrypt.
+
+![violin plot showing time to encrypt using early or late key types](./violin.svg)
+
+The mean time for when using `abcdefg` is 43.747µs with the 95% confidence interval for the true mean between 43.461µs and 44.103µs.
+When using `tuvwxyz`, the mean is 43.783µs (CI: 43.665–43.926µs).
+Criterion [doesn't directly compute whether that difference is significant](https://github.com/bheisler/cargo-criterion/issues/4#issuecomment-1325454534),
+and I haven't done that math myself, but this really looks like a measurable difference that
+leaks information about the letters in the key.
+
+I also tested modular addition directly in cases where the sum is less than the modulus versus cases where it is greater, and I got similar results.
+
+
+
+
+### Side channel: index in String/Vec
+
+Numerical index for a letter might take more time for finding the index at near the end of the string. I attempted to address this by creating a pair of HashMaps to do that lookup instead of searching through a sequence of letters.
 
 
 ## Extra
