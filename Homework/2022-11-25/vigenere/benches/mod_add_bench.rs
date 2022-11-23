@@ -6,7 +6,7 @@ use criterion::{criterion_group, criterion_main};
 
 fn mod_add_no_reduction() -> usize {
     let start: usize = 0;
-    let end: usize = 5_000;
+    let end: usize = 12;
 
     let modulus = 26;
 
@@ -22,8 +22,8 @@ fn mod_add_no_reduction() -> usize {
 }
 
 fn mod_add_with_reduction() -> usize {
-    let start: usize = 5_000;
-    let end: usize = 10_000;
+    let start: usize = 12;
+    let end: usize = 25;
 
     let modulus = 26;
 

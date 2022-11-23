@@ -3,34 +3,31 @@
 // are near the begining of the range or near the end.
 
 use vigenere::Vigenere;
-use criterion::Criterion;
+use criterion::{Criterion, BenchmarkId};
 use criterion::{criterion_group, criterion_main};
 
-fn encrypt_with_early_key() {
-    let key = "abcdefg";
-
+fn encrypt_with_key_type(keytype: &str) {
+    let key = match keytype {
+        "early" => "abcdefg",
+        "late" => "tuvwxyz",
+        _ => panic!("I should have used an enum"),
+    };
     let v = Vigenere::new(&key).unwrap();
-
-    let msg= "THEQUICKBROWNFOXJUMPEDOVERTHELAZYDOG".repeat(7);
-    v.encrypt(&msg);
-
-}
-
-fn encrypt_with_late_key() {
-    let key = "tuvwxyz";
-
-    let v = Vigenere::new(&key).unwrap();
-
-    let msg= "THEQUICKBROWNFOXJUMPEDOVERTHELAZYDOG".repeat(7);
-
+    let msg= "THEQUICKBROWNFOXJUMPEDOVERTHELAZYDOG".repeat(key.len());
     v.encrypt(&msg);
 
 }
 
 fn bench_encrypt(c: &mut Criterion) {
-    let mut group = c.benchmark_group("Encryption");
-    group.bench_function("Early key", |b| b.iter(||  encrypt_with_early_key()));
-    group.bench_function("Late key", |b| b.iter(||  encrypt_with_late_key()));
+    let mut group = c.benchmark_group("Encryption key type");
+    
+    for keytype in ["early", "late"] {
+        group.bench_with_input(
+                BenchmarkId::from_parameter(keytype),
+                keytype,
+                |b, kt| b.iter(||  encrypt_with_key_type(kt))
+            );
+    }
 
     group.finish();
 }
