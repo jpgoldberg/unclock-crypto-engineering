@@ -119,6 +119,15 @@ But I might also
 
 > What is a side channel attack? Is your cipher implementation constant time?
 
+### Side channel: Key length
+
+In the course of running some other tests, I accidentally ran a test where the key lengths were different.
+This resulted an an enormous time difference.
+I have yet to test this more systematically,
+but given that the “hardest” (well, least easy) step in breaking Vigenère is determining the key length, this, perhaps, suggests that Vigenère is not really suitable for use these days.[^7]
+
+[^7]: In case it isn't obvious, that was deliberate understatement.
+
 ### Side channel: Modular Reduction
 
 Whether a modular reduction is needed. Computing `10 + 12 % 26` may take less time than computing `10 + 22 % 26`.
@@ -136,6 +145,21 @@ leaks information about the letters in the key.
 
 I also tested modular addition directly in cases where the sum is less than the modulus versus cases where it is greater, and I got similar results.
 
+My mitigation was for alphabets whose lengths are powers of 2 to use bitwise masking instead of the modulo[^32] (`%`) operation.
+That is where the modulus, `m`, is a power of 2,
+I effectively replaced `(a + b) % m` with
+`(a + b) & (m-1)`.
+The casts needed to get everything to work made the actual code uglier, but that is the concept.
+The idea is that the bitwise AND operation will be performed in all cases, even when a + b is less than m.
+
+[^32]: Because we are only dealing with positive operands, I am not going to bother making the distinction between “remainder” and ”modulo” in what I write here.
+
+My results are a bit confusing to me. I am not so much seeing a difference in average time,
+but I am seeing less variance in the encrypt time.
+
+![violin chart comparing early/late keys with a 32 character alphabet](./32abc-violin.svg)
+
+I _will_ need to actually run statistics to see how measurable the differences are.
 ### Side channel: lookup position in String/Vector
 
 Numerical index for a letter might take more time for finding the index at near the end of the string. I attempted to address this by creating a pair of HashMaps to do that lookup instead of searching through a sequence of letters.
