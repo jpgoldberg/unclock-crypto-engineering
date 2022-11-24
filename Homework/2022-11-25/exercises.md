@@ -160,6 +160,7 @@ but I am seeing less variance in the encrypt time.
 ![violin chart comparing early/late keys with a 32 character alphabet](./32abc-violin.svg)
 
 I _will_ need to actually run statistics to see how measurable the differences are.
+
 ### Side channel: lookup position in String/Vector
 
 Numerical index for a letter might take more time for finding the index at near the end of the string. I attempted to address this by creating a pair of HashMaps to do that lookup instead of searching through a sequence of letters.
