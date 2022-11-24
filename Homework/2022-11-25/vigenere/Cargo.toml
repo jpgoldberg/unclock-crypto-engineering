@@ -23,3 +23,8 @@ harness = false
 [[bench]]
 name = "mod_add_bench"
 harness = false
+
+[[bench]]
+name = "key_abc32"
+harness = false
+
