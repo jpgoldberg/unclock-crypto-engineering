@@ -35,6 +35,8 @@ class Comparison:
         else:
             self.related = False
 
+        self.t, self.p = self.ttest()
+
 
     def ttest(self) -> tuple[float, float]:
         t: float
@@ -56,7 +58,11 @@ def main() -> None:
 
     comp32 = Comparison(EARLY_PATH, LATE_PATH, alternative="less")
 
-    print(comp32.ttest())
+    print(f'With 32 character alphabet: t = {comp32.t:#.3}; p = {comp32.p:#.3}')
+
+    comp_mod = Comparison("mod_add_early.cbor", "mod_add_late.cbor", alternative="less")
+
+    print(f'Mod 26 addition: t = {comp_mod.t:#.3}; p = {comp_mod.p:#.3}')
 
 if __name__ == "__main__":
     main()
