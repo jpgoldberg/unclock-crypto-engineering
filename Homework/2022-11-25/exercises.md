@@ -97,6 +97,9 @@ Perhaps I will see about coding calling the relevant t-tests myself.
 
 >  You're implementing a [Tweakable Encryption](https://en.wikipedia.org/wiki/Disk_encryption_theory) scheme. You need to know what standard API users will expect. Find a reference for the standard API and write the function signatures for encryption and decryption.
 
+I didn't spend a lot of time on this. 
+
+
 ### Hard math
 
 > You want to understand a paper on a new polynomial commitment scheme, but you've been trying for more than an hour, and the math is over your head. What do you do?
@@ -137,13 +140,8 @@ If I encrypt using a key with letters near the beginning of the alphabet, `abcde
 
 ![violin plot showing time to encrypt using early or late key types](./violin.svg)
 
-The mean time for when using `abcdefg` is 43.747µs with the 95% confidence interval for the true mean between 43.461µs and 44.103µs.
-When using `tuvwxyz`, the mean is 43.783µs (CI: 43.665–43.926µs).
-Criterion [doesn't directly compute whether that difference is significant](https://github.com/bheisler/cargo-criterion/issues/4#issuecomment-1325454534),
-and I haven't done that math myself, but this really looks like a measurable difference that
-leaks information about the letters in the key.
-
-I also tested modular addition directly in cases where the sum is less than the modulus versus cases where it is greater, and I got similar results.
+Comparing the timings with the `abcdefg` versus `tuvwxyz` I get a Student $t$ statistic (one-tailed, related pairs) -2.400 (p = 0.009).
+So not only is there a measurable difference, it is statistically significant.
 
 My mitigation was for alphabets whose lengths are powers of 2 to use bitwise masking instead of the modulo[^32] (`%`) operation.
 That is where the modulus, `m`, is a power of 2,
@@ -159,7 +157,8 @@ but I am seeing less variance in the encrypt time.
 
 ![violin chart comparing early/late keys with a 32 character alphabet](./32abc-violin.svg)
 
-I _will_ need to actually run statistics to see how measurable the differences are.
+When I run my comparison here, I get _t_ statistic of -0.444 (p = 0.329).
+This isn't telling me that I get no difference, but it is telling that the differences could well be due to chance.
 
 ### Side channel: lookup position in String/Vector
 

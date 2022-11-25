@@ -58,11 +58,17 @@ def main() -> None:
 
     comp32 = Comparison(EARLY_PATH, LATE_PATH, alternative="less")
 
-    print(f'With 32 character alphabet: t = {comp32.t:#.3}; p = {comp32.p:#.3}')
+    print(f'With 32 character alphabet: t = {comp32.t:.3f}; p = {comp32.p:.3f}')
 
     comp_mod = Comparison("mod_add_early.cbor", "mod_add_late.cbor", alternative="less")
 
-    print(f'Mod 26 addition: t = {comp_mod.t:#.3}; p = {comp_mod.p:#.3}')
+    print(f'Mod 26 addition: t = {comp_mod.t:.3f}; p = {comp_mod.p:.3f}')
+
+    comp26 = Comparison("abc26-early.cbor", "abc26-late.cbor", alternative="less")
+
+    print(f'ABC26 encryption: t = {comp26.t:.3f}; p = {comp26.p:.3f}')
+
+
 
 if __name__ == "__main__":
     main()
