@@ -97,8 +97,9 @@ Perhaps I will see about coding calling the relevant t-tests myself.
 
 >  You're implementing a [Tweakable Encryption](https://en.wikipedia.org/wiki/Disk_encryption_theory) scheme. You need to know what standard API users will expect. Find a reference for the standard API and write the function signatures for encryption and decryption.
 
-I didn't spend a lot of time on this. 
+See [XTS prototype](./xts/src/lib.rs).
 
+Note that actual specification for XTS-AES is behind an IEEE paywall.
 
 ### Hard math
 
