@@ -26,4 +26,75 @@ So eight hours with all of those processors.
 > Consider a new block cipher, *DES2*, that consists only of two rounds of the *DES* block cipher. *DES2* has the same block and key size as *DES*. For this question you should consider the *DES* $F$ function as a black box that takes two inputs, a 32-bit data segment and a 48-bit round key, and that produces a 32-bit output. Suppose you have a large number of plaintext-ciphertext pairs for *DES2* under a single, unknown key. Given an algorithm for recovering the 48-bit round key for round 1 and the 48-bit round key for round 2. Your algorithm should require fewer operations than an exhaustive search for an entire 56-bit *DES* key. Can your algorithm be converted into a distinguishable attack against *DES2*?
 
 I believe that a _Meet_ in the Middle attack should require $2^{49}$ operations. But I should probably read the chapter.
- 
+
+## Ch 3: Q8
+
+> Familiarize yourself with a cryptographic CLI tools. A popular open source package is [*OpenSSL*](https://docs.rs/openssl/latest/openssl/aes/index.html).
+
+Been there. Done that. Still I need to look at the documentation each time.
+
+> Using an existing cryptographic library, decrypt the following ciphertext (in hex)
+>
+> ```
+> 	53 9B 33 3B 39 70 6D 14 90 28 CF E1 D9 D4 A4 07
+> ```
+>
+> with the following 256-bit key (also in hex)
+>
+> ```
+>	80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01
+> ```
+>
+> using *AES*.
+
+Given that the the ciphertext is exactly 1 AES block, this must be ECB.
+
+Get the ciphertext into a variable
+
+```sh
+ct=$(echo -n "53 9B 33 3B 39 70 6D 14 90 28 CF E1 D9 D4 A4 07" | tr -d  ' ') 
+```
+
+And the same with the key
+
+```sh
+raw_key="80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01"
+key=$(echo $raw_key | tr -d '\n ')
+```
+
+Now to look up the OpenSSL CLI arguments for this.
+
+The algorithm will be `-aes-256-ecb`. 
+
+Hmm. While it takes the key as a hex string, I need to actually get the cipher text to raw bytes. So 
+
+```sh
+echo -n $ct | xxd -r -p > ct.bin
+```
+
+Decryption should be 
+
+```sh
+openssl enc -d -aes-256-ecb -in ct.bin -K $key > pt.bin
+```
+
+Let me see if that works
+
+Well fooey. The that gives me 15 bytes of output.
+
+```sh
+xxd -p  < pt.bin       (main)unclock-crypto-engineering
+807060504030201008070605040302
+```
+
+That looks tantalizingly to a a PCKS#7 pad.
+
+Anyway, I am coming to suspect that I shouldn't be doing with on the CLI.
+
+If Brain Smith exposed ECB in ring, I am sure he had a good reason. If not I will look at the Rust openssl bindings
+
+Good for Brian Smith and ring. Ring is suitably high level and opinionated. It doesn't expose such primitives.
+
+So let me go to the other end of the spectrum. https://docs.rs/aes/latest/aes/struct.Aes256.html
+
