@@ -18,6 +18,6 @@ fn main() {
 
     let cipher = Aes256::new(key);
     cipher.decrypt_block(&mut block);
-    println!("{}", hex::encode(block));
+    println!("Ex 3.8\n\t{}", hex::encode(block));
 
 }

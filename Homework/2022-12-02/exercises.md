@@ -27,7 +27,7 @@ So eight hours with all of those processors.
 
 I believe that a _Meet_ in the Middle attack should require $2^{49}$ operations. But I should probably read the chapter.
 
-## Ch 3: Q8
+## Q 3.8
 
 > Familiarize yourself with a cryptographic CLI tools. A popular open source package is [*OpenSSL*](https://docs.rs/openssl/latest/openssl/aes/index.html).
 
@@ -98,3 +98,6 @@ Good for Brian Smith and ring. Ring is suitably high level and opinionated. It d
 
 So let me go to the other end of the spectrum. https://docs.rs/aes/latest/aes/struct.Aes256.html
 
+Getting the key and ciphertext from the hex representation to the GenericArrays that that library wanted was a struggle. But after that, I do get a result of 80706050403020100807060504030201
+
+I do not know why I am losing that last byte when I use openssl at the command line.
