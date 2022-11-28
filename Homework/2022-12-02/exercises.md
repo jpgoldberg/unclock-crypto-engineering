@@ -84,20 +84,33 @@ Let me see if that works
 Well fooey. The that gives me 15 bytes of output.
 
 ```sh
-xxd -p  < pt.bin       (main)unclock-crypto-engineering
+xxd -p  < pt.bin
 807060504030201008070605040302
 ```
 
 That looks tantalizingly to a a PCKS#7 pad.
 
-Anyway, I am coming to suspect that I shouldn't be doing with on the CLI.
-
-If Brain Smith exposed ECB in ring, I am sure he had a good reason. If not I will look at the Rust openssl bindings
-
-Good for Brian Smith and ring. Ring is suitably high level and opinionated. It doesn't expose such primitives.
 
 So let me go to the other end of the spectrum. https://docs.rs/aes/latest/aes/struct.Aes256.html
 
 Getting the key and ciphertext from the hex representation to the GenericArrays that that library wanted was a struggle. But after that, I do get a result of 80706050403020100807060504030201
 
-I do not know why I am losing that last byte when I use openssl at the command line.
+## 3.9
+
+> Using an existing cryptography library, encrypt the following plaintext (in hex)
+>
+> ```hex
+>	29 6C 93 FD F4 99 AA EB 41 94 BA BC 2E 63 56 1D
+> ```
+>
+with the following 256-bit key (also in hex)
+>
+> ```hex
+>	80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01
+> ```
+>
+> using *AES*. Then re-encrypt and decrypt it using a 3072-bit RSA key with GnuPG, or your choice of asymmetric crypto CLI.
+
+The key is the same as for 3.8. I am assuming that this is just encrypting a block, so
+effectively ECB is that is intended.
