@@ -1,7 +1,7 @@
 #[allow(unused_imports)]
 use aes::cipher::{
     generic_array::{typenum::U16, GenericArray},
-    BlockDecrypt, BlockEncrypt, Key, KeyInit,BlockCipher, BlockEncryptMut,
+    BlockDecrypt, BlockEncrypt, Key, KeyInit, KeySizeUser, BlockCipher, BlockEncryptMut,
 };
 
 use hex_literal::hex;
@@ -24,6 +24,42 @@ enum Algorithm {
 
 // I still don't understand GenericArray, but this helped me get things working
 // https://stackoverflow.com/a/60336286/1304076
+
+#[allow(unused)]
+fn des_comp_check(key: &[u8; 56], plaintext: &[u8; 64]) -> Result<bool> {
+
+    let key_comp: Vec<u8> = key
+        .iter()
+        .map(|b| !b)
+        .collect::<Vec<u8>>();
+
+    let pt_comp: Vec<u8> = plaintext
+        .iter()
+        .map(|b| !b)
+        .collect::<Vec<u8>>();
+
+    let key: &GenericArray<u8, <Des as KeySizeUser>::KeySize> = GenericArray::from_slice(key);
+
+    let key_comp: &GenericArray<u8, <Des as KeySizeUser>::KeySize> = GenericArray::from_slice(&key_comp);
+
+    let cipher = Des::new(key);
+    let cipher_comp = Des::new(key_comp);
+
+    let mut block:&GenericArray<u8, U16> = GenericArray::from_slice(plaintext);
+    let mut block_comp:&GenericArray<u8, U16> = GenericArray::from_slice(&pt_comp);
+
+    
+    
+
+
+    
+
+
+
+
+
+    Ok(true)
+}
 
 
 #[allow(unused)]
