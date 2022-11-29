@@ -118,8 +118,71 @@ with the following 256-bit key (also in hex)
 >	80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
 >	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01
 > ```
->
-> using *AES*. Then re-encrypt and decrypt it using a 3072-bit RSA key with GnuPG, or your choice of asymmetric crypto CLI.
 
 The key is the same as for 3.8. I am assuming that this is just encrypting a block, so
 effectively ECB is that is intended.
+
+I get 80000000000000000000000000000001
+
+
+> using *AES*. Then re-encrypt and decrypt it using a 3072-bit RSA key with GnuPG, or your choice of asymmetric crypto CLI.
+
+This isn't clear whether I should be encrypting the ascii hex or the raw bytes.
+My guess is that it is the ASCII hex so that we can see the results, and the main intent
+is to force usage of gpg keygen and other tools.
+
+I don't have an RSA 3072 keypair handy
+
+I used `gpg --full-generate-key` to give me a dialogue that allows me to pick algorithm
+and key size.
+
+I did a listing of all my secret keys to find the ID for the one I just created.
+It's 88A8ECE213A7B04E. Here is its listing.
+
+```
+% gpg --list-keys 88A8ECE213A7B04E
+pub   rsa3072 2022-11-29 [SC] [expires: 2023-11-29]
+      9819E1AC0EE686B77E3587F888A8ECE213A7B04E
+uid           [ultimate] Jeffrey Goldberg (Not for use. Just a class assignment) <jeffrey@goldmark.org>
+sub   rsa3072 2022-11-29 [E] [expires: 2023-11-29]
+```
+
+I put the output (as bytes, not the ASCII hex) of the AES encryption into a file ex3-9.out
+
+```sh
+% echo 80000000000000000000000000000001| xxd -r -p > ex3-9.out 
+```
+
+Wow. The GPG/PGP CLI has changed since I last did any of this stuff on the command line.
+Ah, I see. The "specify the recipient on the command line in any of a dozen different ways and hope we parse the intentions as you might wish" is deeply unsafe.
+I'm glad they got rid of that.
+
+I have encrypted it (with the -a option) and here it is
+
+```
+-----BEGIN PGP MESSAGE-----
+
+hQGMA3/zrBp0R3ONAQwAkVYvKxsg6H4wRTYXR7gI0JrLxXydydjTdwlQh4D/pNcW
+TdI3I50G6IrjxcVIKxaPIzEKNSlTrHRruBDXLNQM4JZPDnn0HwKpy0mPpU6Pn0K1
+Wdg6XzgrPpcoHdNMv9I+G0W24iipa1xpT/FieqlK6U6euX/GoPJ8718cr9wI8g8V
+ufsEYBAXfEG9IRzZE6FyK+/aiMby1xsbJS6RJLMbSwkdAf/6iXHwpt+AuPgm6hLz
+dX3hCOGDBvrw4vw+B0sdZIeN1ypkPA4eUNMvO80VgdWQKWRcF2s2RPuDoRG5aizE
+VEj90xVE8JIX45oDQyC54ACRz/vFaJ6umeVJnnaGLiM49C2503tOpWaS9MVWma8A
+9Ga3kyjIsVCLOIadfVCXz4lXPD5bxKUSHbl5vv2CUDG5CM7mSyPRcPLpALaKOkFb
+hClUoT1obwP7x+aJl9m9flNQnttxhozwSqh3LnbeCbca0exz02q4bOPTTMLEcf+J
+xjfgmD0yEA7K725/ttHP0kkBbM5Qqz6p8vDAV4oYNOr0dJNCg0xKxkEQbGoagM7O
++Zu39RPpvX6A3r5hS8UCzVKRts/zjGC2cBl64LqGe/SxCqXdHAKvx4Aj
+=EZFM
+-----END PGP MESSAGE-----
+```
+
+Decrypted and got back the original
+
+```
+% xxd -p < gpg-decrypted
+80000000000000000000000000000001
+```
+
+Lesson: Every bad CLI decision you make, particularly for something that will be scripted, is going to be a problem for people many years later.
+I'm not saying that I would have done a better job in the 1980s, but this is excruciating.
+And to think that in the 90s, I seriously tried to get lots of people to use this.
