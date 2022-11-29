@@ -1,0 +1,233 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'vigenere'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=vigenere"
+                ],
+                "filter": {
+                    "name": "vigenere",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'vigenere'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=vigenere",
+                    "--package=vigenere"
+                ],
+                "filter": {
+                    "name": "vigenere",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'vigenere'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=vigenere",
+                    "--package=vigenere"
+                ],
+                "filter": {
+                    "name": "vigenere",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug benchmark 'fib_benchmark'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bench=fib_benchmark",
+                    "--package=vigenere"
+                ],
+                "filter": {
+                    "name": "fib_benchmark",
+                    "kind": "bench"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug benchmark 'key_benchmarks'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bench=key_benchmarks",
+                    "--package=vigenere"
+                ],
+                "filter": {
+                    "name": "key_benchmarks",
+                    "kind": "bench"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug benchmark 'mod_add_bench'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bench=mod_add_bench",
+                    "--package=vigenere"
+                ],
+                "filter": {
+                    "name": "mod_add_bench",
+                    "kind": "bench"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug benchmark 'key_abc32'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bench=key_abc32",
+                    "--package=vigenere"
+                ],
+                "filter": {
+                    "name": "key_abc32",
+                    "kind": "bench"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'xts'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=xts"
+                ],
+                "filter": {
+                    "name": "xts",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'xor'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=xor",
+                    "--package=xor"
+                ],
+                "filter": {
+                    "name": "xor",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'xor'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=xor",
+                    "--package=xor"
+                ],
+                "filter": {
+                    "name": "xor",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'exercises'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=exercises",
+                    "--package=exercises"
+                ],
+                "filter": {
+                    "name": "exercises",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'exercises'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=exercises",
+                    "--package=exercises"
+                ],
+                "filter": {
+                    "name": "exercises",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
