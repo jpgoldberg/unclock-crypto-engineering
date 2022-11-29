@@ -186,3 +186,8 @@ Decrypted and got back the original
 Lesson: Every bad CLI decision you make, particularly for something that will be scripted, is going to be a problem for people many years later.
 I'm not saying that I would have done a better job in the 1980s, but this is excruciating.
 And to think that in the 90s, I seriously tried to get lots of people to use this.
+
+## 3.10
+
+> Write a program that experimentally demonstrates the complementation property for DES. This program should take as input a key $K$ and a plaintext $P$ and demonstrate that the DES complementation property holds for this key and plaintext. You may use an existing cryptography library for this exercise.
+
