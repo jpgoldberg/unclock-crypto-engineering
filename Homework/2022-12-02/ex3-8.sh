@@ -20,6 +20,6 @@ verbose "key:" $key
 echo -n $ct | xxd -r -p > ct.bin
 verbose "ct.bin:" $(xxd -p < ct.bin)
 
-openssl enc -d -aes-256-ecb -in ct.bin -K $key > pt.bin
+openssl enc -d -aes-256-ecb -nopad -in ct.bin -K $key > pt.bin
 
 echo "Plaintext:" $(xxd -p < pt.bin)

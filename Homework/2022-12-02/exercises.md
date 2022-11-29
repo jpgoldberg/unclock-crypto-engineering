@@ -65,7 +65,7 @@ key=$(echo $raw_key | tr -d '\n ')
 
 Now to look up the OpenSSL CLI arguments for this.
 
-The algorithm will be `-aes-256-ecb`. 
+The algorithm will be `-aes-256-ecb`.
 
 Hmm. While it takes the key as a hex string, I need to actually get the cipher text to raw bytes. So 
 
@@ -89,6 +89,15 @@ xxd -p  < pt.bin
 ```
 
 That looks tantalizingly to a a PCKS#7 pad.
+
+And thanks to SKaunov's advice to use `-nopad` I can get this to work.
+
+```sh
+openssl enc -d -aes-256-ecb -nopad -in ct.bin -K $key > pt.bin
+```
+
+% xxd -p < pt.bin
+80706050403020100807060504030201
 
 
 So let me go to the other end of the spectrum. https://docs.rs/aes/latest/aes/struct.Aes256.html
