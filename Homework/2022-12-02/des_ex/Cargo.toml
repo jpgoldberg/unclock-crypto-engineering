@@ -1,0 +1,13 @@
+[package]
+name = "des_ex"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.66"
+crypto = "0.4.0"
+crypto-common = "0.1.6"
+des = "0.8.1"
+hex-literal = "0.3.4"

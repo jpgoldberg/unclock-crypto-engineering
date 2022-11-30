@@ -1,18 +1,15 @@
 #[allow(unused_imports)]
-use aes::cipher::{
-    generic_array::{typenum::U16, GenericArray},
-    BlockDecrypt, BlockEncrypt, Key, KeyInit, KeySizeUser, BlockCipher, BlockEncryptMut,
-};
+
+
+use crypto_common::{KeyInit, KeySizeUser, BlockSizeUser, Block,generic_array::GenericArray,};
+use des::Des;
+use aes::{Aes128, Aes256};
 
 use hex_literal::hex;
 
 
 #[allow(unused_imports)]
-use aes::{Aes128, Aes256};
-#[allow(unused_imports)]
 use anyhow::{anyhow, Result, ensure};
-#[allow(unused_imports)]
-use des::Des;
 
 #[allow(dead_code)]
 #[derive(Debug,Clone)]
@@ -24,6 +21,12 @@ enum Algorithm {
 
 // I still don't understand GenericArray, but this helped me get things working
 // https://stackoverflow.com/a/60336286/1304076
+
+type DesKey = GenericArray<u8, <Des as KeySizeUser>::KeySize>;
+type DesBlock = GenericArray<u8, <Des as BlockSizeUser>::BlockSize>;
+type AesKey128 = GenericArray<u8, <Aes128 as KeySizeUser>::KeySize>;
+type AesKey256 = GenericArray<u8, <Aes256 as KeySizeUser>::KeySize>;
+type AesBlock256 = GenericArray<u8, <Aes256 as BlockSizeUser>::BlockSize>;
 
 #[allow(unused)]
 fn des_comp_check(key: &[u8; 56], plaintext: &[u8; 64]) -> Result<bool> {
@@ -38,25 +41,22 @@ fn des_comp_check(key: &[u8; 56], plaintext: &[u8; 64]) -> Result<bool> {
         .map(|b| !b)
         .collect::<Vec<u8>>();
 
-    let key: &GenericArray<u8, <Des as KeySizeUser>::KeySize> = GenericArray::from_slice(key);
+    let key: &DesKey = GenericArray::from_slice(key);
 
-    let key_comp: &GenericArray<u8, <Des as KeySizeUser>::KeySize> = GenericArray::from_slice(&key_comp);
+    let key_comp: &DesKey = GenericArray::from_slice(&key_comp);
 
     let cipher = Des::new(key);
     let cipher_comp = Des::new(key_comp);
 
-    let mut block:&GenericArray<u8, U16> = GenericArray::from_slice(plaintext);
-    let mut block_comp:&GenericArray<u8, U16> = GenericArray::from_slice(&pt_comp);
+    let pt = plaintext.clone();
 
+
+    let mut block = GenericArray::from(pt);
     
-    
+    let mut block_comp: &DesBlock = GenericArray::from_slice(&pt_comp);
 
 
-    
-
-
-
-
+    des::cipher::BlockEncrypt::encrypt_block(&cipher, &mut block);
 
     Ok(true)
 }
@@ -74,20 +74,16 @@ fn main() {
     let key = GenericArray::from_slice(&key);
     let cipher = Aes256::new(key);
 
-    cipher.decrypt_block(&mut block);
+    aes::cipher::BlockDecrypt::decrypt_block(&cipher, &mut block);
     println!("Ex 3.8\n\t{}", hex::encode(block));
 
 
     // exercise 3.9 uses the same key, so I can keep cipher.
 
     let pt = hex!("296C93FDF499AAEB4194BABC2E63561D");
-
-    // let pt_slice: &mut [u8; 16] = &mut [0; 16];
-    // hex::decode_to_slice(pt_hex, pt_slice).expect("failed to de-hexify");
-    // let pt_slice = &*pt_slice;
     let mut block = GenericArray::from(pt);
 
-    cipher.encrypt_block(& mut block);
+    aes::cipher::BlockEncrypt::encrypt_block(&cipher, & mut block);
     println!("Ex 3.9\n\t{}", hex::encode(block));
     
 
