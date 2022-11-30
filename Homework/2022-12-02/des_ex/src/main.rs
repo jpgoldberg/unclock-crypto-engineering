@@ -1,6 +1,6 @@
 #[allow(unused)]
 use des::cipher::{generic_array::GenericArray, Block, BlockSizeUser, KeyInit, KeySizeUser};
-use des::Des;
+use des::{Des, cipher::BlockEncrypt};
 
 use anyhow::Result;
 
@@ -8,7 +8,7 @@ type DesKey = GenericArray<u8, <Des as KeySizeUser>::KeySize>;
 type DesBlock = GenericArray<u8, <Des as BlockSizeUser>::BlockSize>;
 
 
-fn des_comp_test(key: [u8; 56], plaintext: &[u8; 64]) -> Result<bool> {
+fn des_comp_test(key: [u8; 56], plaintext: [u8; 64]) -> Result<bool> {
 
     let key_comp: Vec<u8> = key
         .iter()
@@ -26,6 +26,12 @@ fn des_comp_test(key: [u8; 56], plaintext: &[u8; 64]) -> Result<bool> {
     
     let cipher = Des::new(key);
     let cipher_comp = Des::new(key_comp);
+
+    let pt_copy = plaintext.clone();
+
+    let mut block = GenericArray::from(plaintext);
+
+    cipher.encrypt_block(&mut block);
 
 
     Ok(true)
