@@ -1,17 +1,11 @@
 use des::cipher::{generic_array::GenericArray, BlockSizeUser, KeyInit, KeySizeUser};
 use des::{cipher::BlockEncrypt, Des};
-
 use rand::prelude::*;
-
-use anyhow::Result;
-
-#[allow(unused_imports)]
-use hex_literal::hex;
 
 type DesKey = GenericArray<u8, <Des as KeySizeUser>::KeySize>;
 type DesBlock = GenericArray<u8, <Des as BlockSizeUser>::BlockSize>;
 
-fn des_comp_test(key: [u8; 8], plaintext: [u8; 8]) -> Result<bool> {
+fn des_comp_test(key: [u8; 8], plaintext: [u8; 8]) -> bool {
     // Should we check parity bits on the key? Nah.
 
     let key_comp: Vec<u8> = key.iter().map(|b| !b).collect::<Vec<u8>>();
@@ -34,20 +28,20 @@ fn des_comp_test(key: [u8; 8], plaintext: [u8; 8]) -> Result<bool> {
 
     let comp1_encrypted_block: Vec<u8> = block.iter().map(|b| !b).collect();
 
-    Ok(comp1_encrypted_block == comp_block.to_vec())
+    comp1_encrypted_block == comp_block.to_vec()
 }
 fn main() {
     let mut rng = rand::thread_rng();
     let mut rand_key = [0u8; 8];
     let mut rand_block = [0u8; 8];
 
-    let trials: u32 = 1000;
+    let trials: u32 = 100;
     let mut fails: u32 = 0;
     for _ in 1..=trials {
         rng.fill_bytes(&mut rand_key);
         rng.fill_bytes(&mut rand_block);
 
-        if  !des_comp_test(rand_key, rand_block).unwrap() {
+        if !des_comp_test(rand_key, rand_block) {
             fails += 1;
         }
     }
