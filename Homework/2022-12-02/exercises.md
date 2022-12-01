@@ -104,6 +104,23 @@ So let me go to the other end of the spectrum. https://docs.rs/aes/latest/aes/st
 
 Getting the key and ciphertext from the hex representation to the GenericArrays that that library wanted was a struggle. But after that, I do get a result of 80706050403020100807060504030201
 
+## Ch3:6
+
+> Consider a new block cipher, DES2, that consists only of two rounds of the DES block cipher. DES2 has the same block and key size as DES.
+> For this question you should consider the DES $F$
+> function as a black box that takes two inputs, a 32-bit data segment and a 48-bit round key, and that produces a 32-bit output.
+> Suppose you have a large number of plaintext-ciphertext pairs for DES2 under a single, unknown key. Give an algorithm for recovering the 48-bit round key for round 1 and the 48-bit round key for round 2.
+> Your algorithm should require fewer operations than an exhaustive search for an entire 56-bit DES key. Can your algorithm be converted into a distinguishable attack against DES2?
+
+Just thinking aloud, we do a Meet in the Middle, but because the blocksize is smaller than the key size, we have to build two 2^32 entry tables. 
+
+We pick a 48-bit round 1 key and generate a table with all possible 32 bit inputs.
+This will involve 2^32 single round encryptions. 
+
+Hmm. No that isn't going to work. I have to come back and thing more about this.
+
+ (so 2^33 encryptions). 
+
 ## 3.9
 
 > Using an existing cryptography library, encrypt the following plaintext (in hex)
@@ -124,8 +141,7 @@ effectively ECB is that is intended.
 
 I get 80000000000000000000000000000001
 
-
-> using *AES*. Then re-encrypt and decrypt it using a 3072-bit RSA key with GnuPG, or your choice of asymmetric crypto CLI.
+> using _AES_. Then re-encrypt and decrypt it using a 3072-bit RSA key with GnuPG, or your choice of asymmetric crypto CLI.
 
 This isn't clear whether I should be encrypting the ascii hex or the raw bytes.
 My guess is that it is the ASCII hex so that we can see the results, and the main intent
@@ -178,7 +194,7 @@ xjfgmD0yEA7K725/ttHP0kkBbM5Qqz6p8vDAV4oYNOr0dJNCg0xKxkEQbGoagM7O
 
 Decrypted and got back the original
 
-```
+```sh
 % xxd -p < gpg-decrypted
 80000000000000000000000000000001
 ```
@@ -191,3 +207,64 @@ And to think that in the 90s, I seriously tried to get lots of people to use thi
 
 > Write a program that experimentally demonstrates the complementation property for DES. This program should take as input a key $K$ and a plaintext $P$ and demonstrate that the DES complementation property holds for this key and plaintext. You may use an existing cryptography library for this exercise.
 
+This is in [des_ex](./des-ex)
+
+## C4 Q1
+
+> Let $P$ be a plaintext and let $\ell(P)$ be the length of $P$ in bytes. Let $b$ be the block size of the block cipher in bytes. Explain why the following is not a good padding scheme:
+>
+>> Determine the minimum number of padding bytes necessary in order to pad the plaintext to a block boundary. This is a number $n$ which satisfies $0 ≤ n ≤ b − 1$ and $n + \ell(P)$ is a multiple of $b$. Pad the plaintext by appending $n$ bytes, each with value $n$.
+
+The problem is that if the length of the plaintext is a whole number of blocks long, this scheme will add no padding. But if the last block of input plaintext happens to look like a padded block, we have an ambiguity when decrypting.
+
+To keep the example short, lets assume that our blocksize is 4 bytes. And also assume that our plaintext is `0A 0A 0A 0A   03 03 03 03`.
+When that decrypts, the padding stripper will see the three `03` bytes at the end of the last block and will decrypt and produce an output of `0A 0A 0A 0A   03`.
+
+So a padding scheme must be able to assume that the last block is _always_ padded. This means that when the input is an even multiple of blocks, an entire padding block is added. An alternative scheme would be to include the an unencrypted _n_ of padding bytes (which may be zero) with the ciphertext, so that the decryption mechanism can truncate the final by those.
+
+## Ch4 Q3
+
+Suppose you, as an attacker, observe the following 32-byte ciphertext $C$ (in hex)
+
+```hex
+46 64 DC 06 97 BB FE 69 33 07 15 07 9B A6 C2 3D
+2B 84 DE 4F 90 8D 7D 34 AA CE 96 8B 64 F3 DF 75
+```
+
+and the following 32-byte ciphertext $C'$ (also in hex)
+
+```hex
+51 7E CC 05 C3 BD EA 3B 33 57 0E 1B D8 97 D5 30
+7B D0 91 6B 8D 82 6B 35 B7 8B BB 8D 74 E2 C7 3B.
+```
+
+Suppose you know these ciphertexts were generated using CTR mode with the same nonce. The nonce is implicit, so it is not included in the ciphertext. You also know that the plaintext $P$ corresponding to $C$ is
+
+```hex
+43 72 79 70 74 6F 67 72 61 70 68 79 20 43 72 79
+70 74 6F 67 72 61 70 68 79 20 43 72 79 70 74 6F.
+```
+
+> What information, if any, can you infer about the plaintext $P$ corresponding
+to $C'$?
+
+I would tell you what we infer about $P'$, but  `This is a secret   Confidential!`.
+
+Xor is supper powerful for the same reason that it is dangerous. Those properties are 
+
+- Commutative: $a \oplus b = b \oplus a$
+- Associative: $(a \oplus b) \oplus c = a \oplus (b \oplus c)$
+- Zero identity: $a \oplus 0^{n} = a$
+- Self inverse: $a \oplus a = 0^{n}$
+
+for all strings of bits (or bytes) $a, b, c$ of the same length $n$.
+
+I'm not going to step through all of the logic, but
+the consequence of those properties and the fact that the ciphertexts were created as $C = P \oplus K$ and $C' = P' \oplus K$ for some pad $K$
+allows us compute the $P'$ from what we have been given.
+
+$$P' = (C \oplus P) \oplus C'$$
+
+My code for performing the computation is in [exercies](./exercises/).
+I should add that reading Thor's Vigenère code opened my eyes to `zip`,
+which I found very helpful.

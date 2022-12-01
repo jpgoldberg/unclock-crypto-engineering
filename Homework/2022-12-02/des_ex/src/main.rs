@@ -14,7 +14,7 @@ fn des_comp_check(key: [u8; 8], plaintext: [u8; 8]) -> bool {
     let cipher = Des::new(&key.into());
     let mut block: DesBlock = plaintext.into();
     cipher.encrypt_block(&mut block);
-    let comp_of_encrypted = comp_u8_8(block.as_ref());
+    let comp_of_encrypted: [u8; 8] = comp_u8_8(block.as_ref());
 
     // compute E(comp(K), comp(pt))
     let key_comp = comp_u8_8(&key);
@@ -26,13 +26,9 @@ fn des_comp_check(key: [u8; 8], plaintext: [u8; 8]) -> bool {
     comp_of_encrypted == encryption_of_complements
 }
 
+#[inline] // as if the compiler wouldn't have figured to inline this without my suggestion.
 fn comp_u8_8(arr: &[u8; 8]) -> [u8; 8] {
-    arr.iter()
-        .map(|b| !b)
-        .collect::<Vec<u8>>()
-        .as_slice()
-        .try_into()
-        .expect("uh oh. 8 should equal 8")
+    arr.map(|b| !b)
 }
 
 fn main() {
