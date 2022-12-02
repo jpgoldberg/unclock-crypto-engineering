@@ -15,6 +15,9 @@ mod des_comp;
 use rand::prelude::*;
 use crate::des_comp::des_comp_check;
 
+mod padding;
+use crate::padding::*;
+
 // additional imports for 4.4
 use aes::cipher::{BlockDecryptMut, KeyIvInit};
 
@@ -132,27 +135,6 @@ fn ex_4_4() -> Result<()> {
     Ok(())
 }
 
-fn pkcs_padder(data: &[u8]) -> Vec<u8> {
-    // I really should get the blocksize from somewhere,
-    // but will assume 16 for now.
-    const BLOCKSIZE: usize = 16; // in bytes
-
-    let data_len = data.len();
-
-    // I could do this with bitwise operations. Maybe later.
-    let pbytes: usize = BLOCKSIZE - (data_len % BLOCKSIZE);
-    let mut v = vec![0u8; pbytes + data_len];
-    let padded = v.as_mut_slice();
-
-    // as long as BLOCKSIZE is not greater than u8:MAX + 1 this cast is ok.
-    let pad = vec![pbytes as u8; pbytes];
-
-    padded[..data_len].copy_from_slice(data);
-    padded[data_len..].copy_from_slice(&pad);
-
-    padded.to_vec()
-}
-
 fn main() {
     ex_3_8_9();
     ex_3_10();
@@ -178,25 +160,5 @@ mod test {
     fn test_4_4() {
         let r = ex_4_4();
         assert!(r.is_ok());
-    }
-
-    #[test]
-    fn test_padding() {
-        let unpadded5 = hex!("FF FF FF FF FF");
-        let padded5 = hex!(
-            "FF FF FF FF FF 0B 0B 0B
-                                      0B 0B 0B 0B 0B 0B 0B 0B"
-        );
-
-        let result = pkcs_padder(&unpadded5);
-        assert_eq!(result, padded5);
-
-        let unpadded16 = [0u8; 16];
-        let mut padded16 = unpadded16.to_vec().clone();
-        padded16.append(&mut vec![16u8; 16]);
-
-        let r16 = pkcs_padder(&unpadded16);
-
-        assert_eq!(r16, padded16);
     }
 }
