@@ -268,3 +268,18 @@ $$P' = (C \oplus P) \oplus C'$$
 My code for performing the computation is in [exercies](./exercises/).
 I should add that reading Thor's Vigenère code opened my eyes to `zip`,
 which I found very helpful.
+
+## Ch4 Exercise 4
+
+> The ciphertext (in hex):
+>
+>     87 F3 48 FF 79 B8 11 AF 38 57 D6 71 8E 5F 0F 91
+>     7C 3D 26 F7 73 77 63 5A 5E 43 E9 B5 CC 5D 05 92
+>     6E 26 FF C5 22 0D C7 D4 05 F1 70 86 70 E6 E0 17
+>
+> was generated with the 256-bit AES key (also in hex)
+>
+>     80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01
+>
+> using CBC mode with a random IV. The IV is included at the beginning of the ciphertext. Decrypt this ciphertext. You may use an existing cryptography library for this exercise.

@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 aes = "0.8.2"
 anyhow = "1.0.66"
+cbc = "0.1.2"
 crypto = "0.4.0"
 crypto-common = "0.1.6"
 des = "0.8.1"
