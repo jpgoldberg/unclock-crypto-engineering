@@ -1,10 +1,10 @@
 use std::iter::zip;
 
 use aes::cipher::{
-    generic_array::GenericArray, BlockDecrypt, BlockEncrypt, BlockSizeUser, KeyInit,
+    BlockDecrypt, BlockEncrypt, KeyInit,
 };
 
-type AesBlock256 = GenericArray<u8, <Aes256 as BlockSizeUser>::BlockSize>;
+// type AesBlock256 = GenericArray<u8, <Aes256 as BlockSizeUser>::BlockSize>;
 use aes::Aes256;
 
 use anyhow::Result;
@@ -26,13 +26,13 @@ fn ex_3_8_9() {
 
     let cipher = Aes256::new(&key.into());
 
-    let mut block: AesBlock256 = ct.into();
+    let mut block = ct.into();
     cipher.decrypt_block(&mut block);
     println!("Ex 3.8\n\t{}", hex::encode(block));
 
     // exercise 3.9 uses the same key, so I can keep cipher.
     let pt = hex!("296C93FDF499AAEB4194BABC2E63561D");
-    let mut block: AesBlock256 = pt.into();
+    let mut block = pt.into();
 
     cipher.encrypt_block(&mut block);
     println!("Ex 3.9\n\t{}", hex::encode(block));
@@ -97,8 +97,8 @@ fn ex_4_4() -> Result<()> {
     let ct_b0: [u8; 16] = ct[0..16].try_into()?;
     let ct_b1: [u8; 16] = ct[16..32].try_into()?;
 
-    let block0: AesBlock256 = ct_b0.into();
-    let block1: AesBlock256 = ct_b1.into();
+    let block0 = ct_b0.into();
+    let block1 = ct_b1.into();
 
     let mut cipher = Aes256CbcDec::new(&key.into(), &iv.into());
     cipher.decrypt_blocks_mut(&mut [block0, block1]);
