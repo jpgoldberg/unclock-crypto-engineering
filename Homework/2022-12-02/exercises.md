@@ -283,3 +283,11 @@ which I found very helpful.
 >     00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01
 >
 > using CBC mode with a random IV. The IV is included at the beginning of the ciphertext. Decrypt this ciphertext. You may use an existing cryptography library for this exercise.
+
+I get (as hex)
+
+    7C 3D 26 F7 73 77 63 5A 5E 43 E9 B5 CC 5D 05 92
+    6E 26 FF C5 22 0D C7 D4 05 F1 70 86 70 E6 E0 17
+
+This doesn't look random, but it certainly is out of printable ASCII.
+Note that it is unpadded.

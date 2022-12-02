@@ -1,6 +1,5 @@
 use std::iter::zip;
 
-use aes::cipher::block_padding::Pkcs7;
 use aes::cipher::{
     generic_array::GenericArray, BlockDecrypt, BlockEncrypt, BlockSizeUser, KeyInit,
 };
@@ -8,12 +7,12 @@ use aes::cipher::{
 type AesBlock256 = GenericArray<u8, <Aes256 as BlockSizeUser>::BlockSize>;
 use aes::Aes256;
 
+use anyhow::Result;
 use hex_literal::hex;
-use anyhow::{anyhow, Result};
 
 // additional imports for 4.4
-use cbc;
-use aes::cipher::{KeyIvInit, BlockDecryptMut};
+use aes::cipher::{BlockDecryptMut, KeyIvInit};
+
 // type Aes256CbcEnc = cbc::Encryptor<aes::Aes256>;
 type Aes256CbcDec = cbc::Decryptor<aes::Aes256>;
 
@@ -41,77 +40,82 @@ fn ex_3_8_9() {
 
 #[allow(unused)]
 fn ex_4_3() {
-    let c1 = hex!("
+    let c1 = hex!(
+        "
                     46 64 DC 06 97 BB FE 69
                     33 07 15 07 9B A6 C2 3D
                     2B 84 DE 4F 90 8D 7D 34
                     AA CE 96 8B 64 F3 DF 75
-                ");
-    let c2 = hex!("
+                "
+    );
+    let c2 = hex!(
+        "
                     51 7E CC 05 C3 BD EA 3B
                     33 57 0E 1B D8 97 D5 30
                     7B D0 91 6B 8D 82 6B 35
                     B7 8B BB 8D 74 E2 C7 3B
-                ");
-    let p1 = hex!("
+                "
+    );
+    let p1 = hex!(
+        "
                     43 72 79 70 74 6F 67 72
                     61 70 68 79 20 43 72 79
                     70 74 6F 67 72 61 70 68
                     79 20 43 72 79 70 74 6F
-    ");
+    "
+    );
 
     // pad = c1 xor p1
     let pad: Vec<u8> = zip(c1, p1).map(|(b1, b2)| b1 ^ b2).collect();
 
     // pt2 = pad xor c2
-    let p2: Vec<u8> = zip(pad, c2)
-        .map(|(b1, b2)| b1 ^ b2)
-        .collect();
+    let p2: Vec<u8> = zip(pad, c2).map(|(b1, b2)| b1 ^ b2).collect();
 
-    // println!("Ex 4.3: Pʹ\n\t{}", p2_text);
+    println!("Ex 4.3: P'\n\t{:X?}", p2);
     // We get p2 [84, 104, 105, 115, 32, 105, 115, 32, 97, 32, 115, 101, 99, 114, 101, 116, 32, 32, 32, 67, 111, 110, 102, 105, 100, 101, 110, 116, 105, 97, 108, 33]
     // That really looks like ASCII printable range to me.
 
     let p2_text: String = p2.iter().map(|c| *c as char).collect();
-    
-    println!("Ex 4.3: Pʹ\n\t{:?}", p2);
+    println!("Ex 4.3: Pʹ\n\t{}", p2_text);
 
-
+    println!("Ex 4.3: P'\n\t{:X?}", p2);
 }
-
 
 fn ex_4_4() -> Result<()> {
     let iv = hex!("87 F3 48 FF 79 B8 11 AF 38 57 D6 71 8E 5F 0F 91");
-    let ct = hex!("7C 3D 26 F7 73 77 63 5A 5E 43 E9 B5 CC 5D 05 92
-                             6E 26 FF C5 22 0D C7 D4 05 F1 70 86 70 E6 E0 17");
-    let key = hex!("80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-                              00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01");
+    let ct = hex!(
+        "7C 3D 26 F7 73 77 63 5A 5E 43 E9 B5 CC 5D 05 92
+                             6E 26 FF C5 22 0D C7 D4 05 F1 70 86 70 E6 E0 17"
+    );
+    let key = hex!(
+        "80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+                              00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01"
+    );
 
     // buf needs to be long enough for the plaintext + padding block
-    let mut buf = [0u8; 48];
-    let ct_len = ct.len();
-    buf[..ct_len].copy_from_slice(&ct);
 
-    let cipher= Aes256CbcDec::new(&key.into(), &iv.into());
-    let pt = cipher.decrypt_padded_mut::<Pkcs7>(&mut buf);
+    let ct_b0: [u8; 16] = ct[0..16].try_into()?;
+    let ct_b1: [u8; 16] = ct[16..32].try_into()?;
 
-    match pt {
-        Ok(ptext) => { println!("Ex 4.4: plaintext\n\t{:?}", ptext) },
-        Err(_) => {return Err(anyhow!("An unpadding error"))},
-    }
+    let block0: AesBlock256 = ct_b0.into();
+    let block1: AesBlock256 = ct_b1.into();
 
-    println!("Ex 4.4: plaintext\n\t{:?}", pt);
+    let mut cipher = Aes256CbcDec::new(&key.into(), &iv.into());
+    cipher.decrypt_blocks_mut(&mut [block0, block1]);
+
+    println!("Ex 4.4: plaintext\n\t{:X?}\n\t{:X?}", block0, block1);
 
     Ok(())
-
 }
 
 fn main() {
     ex_3_8_9();
     ex_4_3();
     match ex_4_4() {
-        Ok(_) => {},
-        Err(e) => { eprintln!("{:?}", e) },
+        Ok(_) => {}
+        Err(e) => {
+            eprintln!("{:?}", e)
+        }
     }
 }
 
