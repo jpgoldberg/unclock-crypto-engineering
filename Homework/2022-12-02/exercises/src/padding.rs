@@ -1,10 +1,8 @@
-
 // I really should get the blocksize from somewhere,
 // but will assume 16 for now.
 const BLOCKSIZE: usize = 16; // in bytes
 
 pub(crate) fn pkcs_padder(data: &[u8]) -> Vec<u8> {
-
     let data_len = data.len();
 
     // I could do this with bitwise operations. Maybe later.
@@ -25,7 +23,7 @@ pub(crate) fn pkcs_validator(block: Vec<u8>) -> bool {
     if block.len() != BLOCKSIZE {
         return false;
     }
-    let last = block[BLOCKSIZE-1];
+    let last = block[BLOCKSIZE - 1];
     if last > BLOCKSIZE as u8 {
         return false;
     }
@@ -49,7 +47,7 @@ mod test {
         assert_eq!(result, padded5);
 
         let unpadded16 = [0u8; 16];
-        let mut padded16 = unpadded16.to_vec().clone();
+        let mut padded16 = unpadded16.to_vec();
         padded16.append(&mut vec![16u8; 16]);
 
         let r16 = pkcs_padder(&unpadded16);
@@ -66,23 +64,20 @@ mod test {
         }
 
         let tests = vec![
-            TestVector{
+            TestVector {
                 name: "Short".into(),
-                input: vec![01, 02, 03, 04],
-                expected: false,  
-
+                input: vec![1, 2, 3, 4],
+                expected: false,
             },
-            TestVector{
+            TestVector {
                 name: "Long".into(),
-                input: vec![01; 17],
-                expected: false,  
-
+                input: vec![1; 17],
+                expected: false,
             },
-            TestVector{
+            TestVector {
                 name: "four pad".into(),
                 input: vec![4; 16],
-                expected: true, 
-
+                expected: true,
             },
         ];
 
@@ -91,5 +86,4 @@ mod test {
             assert_eq!(r, t.expected, "test {} failed", t.name);
         }
     }
-
 }

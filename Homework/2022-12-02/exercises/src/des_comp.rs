@@ -1,14 +1,13 @@
-use des::cipher::BlockEncrypt;
 use crypto_common::KeyInit;
+use des::cipher::BlockEncrypt;
 use des::Des;
 
 /// returns true iff comp(E(key, plaintext)) == E(comp(key), comp(plaintext))
 /// Does not parity check key bytes
 pub(crate) fn des_comp_check(key: [u8; 8], plaintext: [u8; 8]) -> bool {
-    
     // compute comp(E(K, pt))
     let cipher = Des::new(&key.into());
-    let mut block= plaintext.into();
+    let mut block = plaintext.into();
     cipher.encrypt_block(&mut block);
     let comp_of_encrypted: [u8; 8] = comp_u8_8(block.as_ref());
 
@@ -26,4 +25,3 @@ pub(crate) fn des_comp_check(key: [u8; 8], plaintext: [u8; 8]) -> bool {
 fn comp_u8_8(arr: &[u8; 8]) -> [u8; 8] {
     arr.map(|b| !b)
 }
-
