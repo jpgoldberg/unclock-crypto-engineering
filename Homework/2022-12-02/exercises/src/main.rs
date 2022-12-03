@@ -21,7 +21,7 @@ use aes::cipher::{BlockDecryptMut, KeyIvInit};
 // type Aes256CbcEnc = cbc::Encryptor<aes::Aes256>;
 type Aes256CbcDec = cbc::Decryptor<aes::Aes256>;
 
-fn ex_3_8_9() {
+fn ex_3_8_9() -> String {
     let key = hex!(
         "
         80000000 00000000 00000000 00000000
@@ -33,17 +33,18 @@ fn ex_3_8_9() {
 
     let mut block = ct.into();
     cipher.decrypt_block(&mut block);
-    println!("Ex 3.8\n\t{}", hex::encode(block));
+    let ex38 =  format!("Ex 3.8\n\t{}", hex::encode(block));
 
     // exercise 3.9 uses the same key, so I can keep cipher.
     let pt = hex!("296C93FDF499AAEB4194BABC2E63561D");
     let mut block = pt.into();
 
     cipher.encrypt_block(&mut block);
-    println!("Ex 3.9\n\t{}", hex::encode(block));
+
+    format!("{}\nEx 3.9\n\t{}", ex38, hex::encode(block))
 }
 
-fn ex_3_10() {
+fn ex_3_10() -> String {
     let mut rng = rand::thread_rng();
     let mut rand_key = [0u8; 8];
     let mut rand_block = [0u8; 8];
@@ -58,11 +59,11 @@ fn ex_3_10() {
             fails += 1;
         }
     }
-    println!("Ex 3.10:\n\t{} failure(s) of {} trials", fails, trials);
+    format!("Ex 3.10:\n\t{} failure(s) of {} trials", fails, trials)
 }
 
 #[allow(unused)]
-fn ex_4_3() {
+fn ex_4_3() -> String {
     let c1 = hex!(
         "
                     46 64 DC 06 97 BB FE 69
@@ -99,10 +100,10 @@ fn ex_4_3() {
     // That really looks like ASCII printable range to me.
 
     let p2_text: String = p2.iter().map(|c| *c as char).collect();
-    println!("Ex 4.3: Pʹ\n\t{}", p2_text);
+    format!("Ex 4.3: Pʹ\n\t{}", p2_text)
 }
 
-fn ex_4_4() {
+fn ex_4_4()  -> String {
     let iv = hex!("87 F3 48 FF 79 B8 11 AF 38 57 D6 71 8E 5F 0F 91");
     let ct = hex!(
         "7C 3D 26 F7 73 77 63 5A 5E 43 E9 B5 CC 5D 05 92
@@ -124,11 +125,11 @@ fn ex_4_4() {
     let mut cipher = Aes256CbcDec::new(&key.into(), &iv.into());
     cipher.decrypt_blocks_mut(&mut [block0, block1]);
 
-    println!("Ex 4.4: plaintext\n\t{:02X?}\n\t{:02X?}", block0, block1);
+    format!("Ex 4.4: plaintext\n\t{:02X?}\n\t{:02X?}", block0, block1)
 }
 
 // The task is to implement a scheme. It doesn't ask to compute anything.
-fn ex_4_6() {
+fn ex_4_6() -> String {
     let unpadded5 = hex!("FF FF FF FF FF");
     let padded5 = hex!(
         "FF FF FF FF FF 0B 0B 0B
@@ -184,16 +185,22 @@ fn ex_4_6() {
         }
     }
 
-    println!(
+    format!(
         "Ex 4.6\n\t{} failures of {} padding/verifying tests",
         test_failures, test_count
-    );
+    )
 }
 
 fn main() {
-    ex_3_8_9();
-    ex_3_10();
-    ex_4_3();
-    ex_4_4();
-    ex_4_6();
+    let exercise_funcs = vec![
+                        ex_3_8_9 as fn() -> String,
+                        ex_3_10,
+                        ex_4_3,
+                        ex_4_4,
+                        ex_4_6,
+                    ];
+
+    for f in exercise_funcs {
+        println!("{}", f());
+    }
 }
