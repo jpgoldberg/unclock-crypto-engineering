@@ -33,7 +33,7 @@ fn ex_3_8_9() -> String {
 
     let mut block = ct.into();
     cipher.decrypt_block(&mut block);
-    let ex38 =  format!("Ex 3.8\n\t{}", hex::encode(block));
+    let ex38 = format!("Ex 3.8\n\t{}", hex::encode(block));
 
     // exercise 3.9 uses the same key, so I can keep cipher.
     let pt = hex!("296C93FDF499AAEB4194BABC2E63561D");
@@ -103,7 +103,7 @@ fn ex_4_3() -> String {
     format!("Ex 4.3: Pʹ\n\t{}", p2_text)
 }
 
-fn ex_4_4()  -> String {
+fn ex_4_4() -> String {
     let iv = hex!("87 F3 48 FF 79 B8 11 AF 38 57 D6 71 8E 5F 0F 91");
     let ct = hex!(
         "7C 3D 26 F7 73 77 63 5A 5E 43 E9 B5 CC 5D 05 92
@@ -192,13 +192,7 @@ fn ex_4_6() -> String {
 }
 
 fn main() {
-    let exercise_funcs = vec![
-                        ex_3_8_9 as fn() -> String,
-                        ex_3_10,
-                        ex_4_3,
-                        ex_4_4,
-                        ex_4_6,
-                    ];
+    let exercise_funcs = vec![ex_3_8_9 as fn() -> String, ex_3_10, ex_4_3, ex_4_4, ex_4_6];
 
     for f in exercise_funcs {
         println!("{}", f());
