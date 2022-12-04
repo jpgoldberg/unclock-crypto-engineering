@@ -7,11 +7,17 @@
 Each block is 10 bytes, so 2 * 10 * 2^64 bytes.
 If you really want to see that in decimal it is `368_934_881_474_191_032_320`.
 
+Oops: I got that wrong. I don't need to store a pair of blocks per, I need to store all pairs of blocks in the permutation per key.
+
+So in bits, $2 \cdot 2^{80} \cdot 2^{64} = 2^{145}$.
+
+And so $2^{137}$ bytes.
+
 ## Ch2: 5
 
 > Suppose you have a processor that can perform a single DES encryption or decryption operation in $2^{-26}$  seconds. Suppose you also have a large number of plaintext-ciphertext pairs for $DES$ under a single unknown key. How many hours would it take, on average, to find that $DES$ key, using an exhaustive search approach and a single processor? How many hours would it take, with a collection of $2^{14}$ processors?
 
-A full search would take _s_ seconds where $s = 2^{-26} \cdot 2^{56} = 2^{30}.
+A full search would take _s_ seconds where $s = 2^{-26} \cdot 2^{56} = 2^{30}$.
 There are approximately[^12] $2^{12}$ seconds per hour, so we are looking at $2^{18}$ hours
 for a full search, and so half of that for an average search, yielding $2^{17}$ hours.
 For the rest, I need a calculator: Yikes that is around 5500 days (15 years)! That is far longer than I expected.
@@ -25,7 +31,9 @@ So eight hours with all of those processors.
 
 > Consider a new block cipher, *DES2*, that consists only of two rounds of the *DES* block cipher. *DES2* has the same block and key size as *DES*. For this question you should consider the *DES* $F$ function as a black box that takes two inputs, a 32-bit data segment and a 48-bit round key, and that produces a 32-bit output. Suppose you have a large number of plaintext-ciphertext pairs for *DES2* under a single, unknown key. Given an algorithm for recovering the 48-bit round key for round 1 and the 48-bit round key for round 2. Your algorithm should require fewer operations than an exhaustive search for an entire 56-bit *DES* key. Can your algorithm be converted into a distinguishable attack against *DES2*?
 
-I believe that a _Meet_ in the Middle attack should require $2^{49}$ operations. But I should probably read the chapter.
+I believe that a Meet in the Middle attack should require $2^{49}$ operations. But I should probably read the chapter.
+
+Update: Seeing Thor's hint and then answer of 2^33 tells me that I failed to make use of the small blocksize. I still need to go over the answer carefully to make sure I understand it.
 
 ## Q 3.8
 
@@ -103,23 +111,6 @@ openssl enc -d -aes-256-ecb -nopad -in ct.bin -K $key > pt.bin
 So let me go to the other end of the spectrum. https://docs.rs/aes/latest/aes/struct.Aes256.html
 
 Getting the key and ciphertext from the hex representation to the GenericArrays that that library wanted was a struggle. But after that, I do get a result of 80706050403020100807060504030201
-
-## Ch3:6
-
-> Consider a new block cipher, DES2, that consists only of two rounds of the DES block cipher. DES2 has the same block and key size as DES.
-> For this question you should consider the DES $F$
-> function as a black box that takes two inputs, a 32-bit data segment and a 48-bit round key, and that produces a 32-bit output.
-> Suppose you have a large number of plaintext-ciphertext pairs for DES2 under a single, unknown key. Give an algorithm for recovering the 48-bit round key for round 1 and the 48-bit round key for round 2.
-> Your algorithm should require fewer operations than an exhaustive search for an entire 56-bit DES key. Can your algorithm be converted into a distinguishable attack against DES2?
-
-Just thinking aloud, we do a Meet in the Middle, but because the blocksize is smaller than the key size, we have to build two 2^32 entry tables. 
-
-We pick a 48-bit round 1 key and generate a table with all possible 32 bit inputs.
-This will involve 2^32 single round encryptions. 
-
-Hmm. No that isn't going to work. I have to come back and thing more about this.
-
- (so 2^33 encryptions). 
 
 ## 3.9
 
@@ -207,7 +198,7 @@ And to think that in the 90s, I seriously tried to get lots of people to use thi
 
 > Write a program that experimentally demonstrates the complementation property for DES. This program should take as input a key $K$ and a plaintext $P$ and demonstrate that the DES complementation property holds for this key and plaintext. You may use an existing cryptography library for this exercise.
 
-This is in [des_ex](./des-ex)
+This is in [des_comp.rs](./examples/src/des_comp.rs)
 
 ## C4 Q1
 
@@ -265,7 +256,7 @@ allows us compute the $P'$ from what we have been given.
 
 $$P' = (C \oplus P) \oplus C'$$
 
-My code for performing the computation is in [exercies](./exercises/).
+My code for performing the computation is in [exercises](./exercises/).
 I should add that reading Thor's Vigenère code opened my eyes to `zip`,
 which I found very helpful.
 
