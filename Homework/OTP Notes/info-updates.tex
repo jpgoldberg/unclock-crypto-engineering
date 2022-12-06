@@ -1,0 +1,57 @@
+\documentclass{article}
+
+\usepackage[probability]{cryptocode}
+
+\newcommand\mdusk{\ensuremath{\mathtt{dusk}}}
+\newcommand\mdawn{\ensuremath{\mathtt{dawn}}}
+
+\begin{document}
+To help illustrate why a key must be as long as the plaintext in order to achieve perfect secrecy, let's consider a case in which a key is 1-bit smaller than then the plaintext.
+
+Suppose the attacker has captured a ciphertext of a 14 byte (112 bit) message.
+Suppose also that the attacker very strongly suspects that the message is one of either “\texttt{attack at dawn}” or ”\texttt{attack at dusk}”.
+We will simply refer to these as the \mdusk\ message or the \mdawn\ message.
+
+Let's give ourselves some concrete numbers to work with. Before doing any analysis the attacker assigns these probabilities.
+
+\begin{align*}
+    \prob{M = \mdawn} & = 0.45 \\
+    \prob{M = \mdawn} & = 0.45 \\
+\end{align*}
+This leaves a 0.1 probability that the plaintext is neither.
+
+If an algorithm runs through all $2^{112}$ possible pads it will give the attacker $2^{112}$ possible plaintexts.
+The two suspected messages, \mdawn\ and \mdusk, will be among them.
+The output of this algorithm will not allow the attacker to update any of their probability assessments. They learn nothing new.
+
+But now suppose the plaintext is encrypted with a 111 bit key, and the best attack on the cipher is to brute force the key space.
+An attacker with unlimited computing power could run through all possible 111-bit keys and produce $2^{111}$ candidate plaintexts.
+$2{111}$ half of $2^{112}$.
+So the attacker has now ruled out half of all possible plaintexts,
+and ruling out half of the possible plaintexts is learning something new,
+
+Let's consider the four possible outcomes with respect to \mdawn\ and \mdusk.
+
+\begin{enumerate}
+    \item\label{en:dawn} \mdawn, but not \mdusk, is among the outputs;
+    \item\label{en:dusk} \mdusk, but not \mdawn, is among the outputs;
+    \item\label{en:neither} Neither \mdusk\ nor \mdawn\ are among the outputs.
+    \item\label{en:both} Both \mdawn\ and \mdusk\ are among the $2^{111}$ outputs.
+\end{enumerate}
+
+In (\ref{en:dawn}) the attacker no knows that the probability of the message being \texttt{attack at dusk} is zero.
+The attacker has definitely learned something new.
+Likewise, in (\ref{en:dusk}) the attacker no knows that the probability of the message being \texttt{attack at dawn} is zero.
+The attacker has also learned something new.
+
+In the case of that neither is in the output (\ref{en:neither}) the attacker learns
+that neither could have been the plaintext and so has to treat the probability of both suspected messages to zero. The attacker may not like it, but this is the case where they learn the most.
+
+The attacker learns something, though not much, even in case~(\ref{en:both}).
+It nudges the probabilities of both \mdusk\ and \mdawn\ a bit closer to 0.5.
+
+\end{document}
+
+
+
+
