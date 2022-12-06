@@ -1,6 +1,9 @@
 \documentclass{article}
 
 \usepackage[probability,sets]{cryptocode}
+\usepackage{booktabs}
+\usepackage{dcolumn}
+\newcolumntype{.}{D{.}{.}{-1}}
 
 \newcommand\mdusk{\ensuremath{\mathtt{dusk}}}
 \newcommand\mdawn{\ensuremath{\mathtt{dawn}}}
@@ -77,8 +80,87 @@ Before conducting the experiment the attacker assigns these probabilities:
     H_n & = 1 - (H_a + H_u) 
 \end{align*}
 
-Let's work through case $E_n$ first, as that is the easiest.
-(Though perhaps it isn't that helpful as we end up shortcutting through the actual Bayesian stuff.)
+\subsection{\(E = E_a\)}
+
+Let's start with experimental outcome $E_a$. That is we ran through all 111-bit keys and found the \mdawn\ message among the $2^{111}$ outputs but did not find the \mdusk\ message.
+
+We want to update our probability assignments conditioned on getting $E_a$. That is, our goal in this section is to compute \condprob{H_a}{E_a}, \condprob{H_u}{E_a}, \condprob{H_n}{E_a}.
+
+We don't need to go through the Bayesian math for \condprob{H_u}{E_a}.
+There is simply no way that $H_u$ could be true if we don't see the \mdusk\ message among our outputs. So we know that $\condprob{H_u}{E_a} = 0$.
+
+We also know that \condprob{H_n}{E_a} is just what is left over from the other two hypotheses, so $\condprob{H_n}{E_a} = 1 - \condprob{H_a}{E_a}$.
+So we will only really need to compute \condprob{H_a}{E_a} using Bayes Rule.
+
+
+We start by computing all of the conditional probabilities from needed for the right hand side of equation~(\ref{eq:bayesH}). This means computing the likelihood of getting $E_a$ given each of the hypotheses. 
+
+We need to first calculate the probabilities of getting the given experimental outcome $E_a$ given each of the hypotheses.
+We can immediately conclude $\condprob{E_a}{H_u} = 0$.
+If \mdusk\ is the answer, there is no way that we could get an experimental result without an \mdusk\ message.
+
+This leaves us with $H_a$ and $H_n$.
+We only need to figure out one of them, because the other will just 1 minus whichever we compute.
+Because we have gone through half of the $2^{112}$ possible messages,
+we can assume\footnote{%
+    We can make this assumption because we are already pretending that the best attack on this cipher is to go through all of the keys. If the output within that $2^{111}$ candidate plaintext space were distinguishable from random, then this assumption would not be safe.
+}
+anything that isn't the actual plaintext has a 0.5 probability\footnote{%
+    It is actually a teeny-tiny bit smaller, as one spot in the list of outputs
+    is taken up by the real plaintext. So it is $(2^{111}-1)/2^{112}$ chance.
+    But that differs from 0.5 by a negligible amount.)
+}
+of showing up in our experimental output.
+So both \condprob{E_a}{H_a} and \condprob{E_a}{H_n} are 0.5.
+
+Now we can compute \prob{E_a} using equation~\ref{eq:ProbE}.
+
+\begin{equation}
+    \begin{split}
+        \prob{E_a}  &= \sum \condprob{E_a}{H_i}\prob{H_i} \\
+                    &= \condprob{E_a}{H_a}\prob{H_a}
+                        + \condprob{E_a}{H_u}\prob{H_u}
+                        + \condprob{E_a}{H_n}\prob{H_n} \\
+                    &= 0.5 \cdot 0.45 + 0 \cdot 0.45 + 0.5 \cdot 0.1 \\
+                    & 0.275
+    \end{split}
+\end{equation}
+
+And now we have all of the values we need to plug into equation~\ref{eq:bayesH}
+
+\begin{equation}
+    \begin{split}
+        \condprob{H_a}{E_a}
+            &= \frac{\condprob{E_a}{H_a}\prob{H_a}}{\prob{E_a}} \\
+            &= \frac{0.5 \cdot 0.45}{0.275} \\
+            &\approx 0.82
+    \end{split}
+\end{equation}
+
+So we can now update the probabilities of for each hypothesis
+
+\begin{table}
+    \begin{center}
+    \begin{tabular}{l..}
+        \toprule
+        \multicolumn{1}{c}{Hypothesis}
+        & \multicolumn{1}{c}{Prior} 
+        & \multicolumn{1}{c}{Posterior from $E_a$} \\
+        \midrule
+        $H_a$                       & 0.45      & 0.82 \\
+        $H_u$                       & 0.45      & 0 \\
+        $H_n$                       & 0.10      & 0.18 \\
+        \bottomrule
+    \end{tabular}
+    \caption{How a result of \(E_a\) updates our prior probabilities}
+    \end{center}
+\end{table}
+
+\subsection{\(E = E_n\)}
+
+Let's now work through the case where the experiment spit out neither \mdawn\ nor \mdusk. We really don't need to do the whole Bayesian thing here as we can see that that this means that we now know exactly which of our three hypotheses is true. 
+
+
 We compute all of the conditional probabilities from needed for the right hand side of equation~(\ref{eq:bayesH}).
 
 
