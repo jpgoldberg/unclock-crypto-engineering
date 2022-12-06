@@ -1,6 +1,6 @@
 \documentclass{article}
 
-\usepackage[probability]{cryptocode}
+\usepackage[probability,sets]{cryptocode}
 
 \newcommand\mdusk{\ensuremath{\mathtt{dusk}}}
 \newcommand\mdawn{\ensuremath{\mathtt{dawn}}}
@@ -12,14 +12,6 @@ Suppose the attacker has captured a ciphertext of a 14 byte (112 bit) message.
 Suppose also that the attacker very strongly suspects that the message is one of either “\texttt{attack at dawn}” or ”\texttt{attack at dusk}”.
 We will simply refer to these as the \mdusk\ message or the \mdawn\ message.
 
-Let's give ourselves some concrete numbers to work with. Before doing any analysis the attacker assigns these probabilities.
-
-\begin{align*}
-    \prob{M = \mdawn} & = 0.45 \\
-    \prob{M = \mdawn} & = 0.45 \\
-\end{align*}
-This leaves a 0.1 probability that the plaintext is neither.
-
 If an algorithm runs through all $2^{112}$ possible pads it will give the attacker $2^{112}$ possible plaintexts.
 The two suspected messages, \mdawn\ and \mdusk, will be among them.
 The output of this algorithm will not allow the attacker to update any of their probability assessments. They learn nothing new.
@@ -28,27 +20,88 @@ But now suppose the plaintext is encrypted with a 111 bit key, and the best atta
 An attacker with unlimited computing power could run through all possible 111-bit keys and produce $2^{111}$ candidate plaintexts.
 $2{111}$ half of $2^{112}$.
 So the attacker has now ruled out half of all possible plaintexts,
-and ruling out half of the possible plaintexts is learning something new,
+and ruling out half of the possible plaintexts is learning something new.
 
-Let's consider the four possible outcomes with respect to \mdawn\ and \mdusk.
+For reasons which may or may not become clear later, I am going to call the this run of trying all $2^{111}$ keys the experiment. 
+With respect to \mdawn\ and \mdusk, there are four distinct experimental outcomes:
 
 \begin{enumerate}
-    \item\label{en:dawn} \mdawn, but not \mdusk, is among the outputs;
-    \item\label{en:dusk} \mdusk, but not \mdawn, is among the outputs;
+    \item\label{en:dawn} \mdawn, but not \mdusk, is among the outputs.
+        We will call this experimental outcome $E_a$.
+    \item\label{en:dusk} \mdusk, but not \mdawn, is among the outputs.
+        We will call this experimental outcome $E_u$.
     \item\label{en:neither} Neither \mdusk\ nor \mdawn\ are among the outputs.
+    We will call this experimental outcome $E_n$.
     \item\label{en:both} Both \mdawn\ and \mdusk\ are among the $2^{111}$ outputs.
+    We will call this experimental outcome $E_b$.
 \end{enumerate}
 
-In (\ref{en:dawn}) the attacker no knows that the probability of the message being \texttt{attack at dusk} is zero.
+In experimental outcome $E_a$ the attacker no knows that the probability of the message being \texttt{attack at dusk} is zero.
 The attacker has definitely learned something new.
-Likewise, in (\ref{en:dusk}) the attacker no knows that the probability of the message being \texttt{attack at dawn} is zero.
+Likewise, in $E_u$ the attacker no knows that the probability of the message being \texttt{attack at dawn} is zero.
 The attacker has also learned something new.
 
-In the case of that neither is in the output (\ref{en:neither}) the attacker learns
+In the experimental outcome that neither is in the output ($E_n$) the attacker learns
 that neither could have been the plaintext and so has to treat the probability of both suspected messages to zero. The attacker may not like it, but this is the case where they learn the most.
 
-The attacker learns something, though not much, even in case~(\ref{en:both}).
+The attacker learns something, though not much, with outcome $E_b$.
 It nudges the probabilities of both \mdusk\ and \mdawn\ a bit closer to 0.5.
+
+\section{Computation}
+
+We have three hypotheses, \mdawn, \mdusk, and neither.
+We have four possible types of events given our $2^{111}$ possible types of keys.
+
+Because we are talking about how we are updating probabilities, Bayes' Rule is what we will use.
+
+For any particular experimental outcome, $E$ we can update the probability of each hypothesis using Bayes Rule.
+
+\begin{equation}\label{eq:bayesH}
+    \condprob{H_i}{E} = \frac{\condprob{E}{H_i}\prob{H_i}}{\prob{E}}
+\end{equation}
+where
+\begin{equation}\label{eq:ProbE}
+    \prob{E} = \sum \condprob{E}{H_i}\prob{H_i}
+\end{equation}
+
+We will have $E$ range over our four different experiment outcomes.
+
+Equation~(\ref{eq:bayesH} may not be useful to you, but it is certainly useful for me as I am writing this.
+
+Let's give ourselves some concrete numbers to work with.
+Before conducting the experiment the attacker assigns these probabilities:
+
+\begin{align*}
+    \prob{M = \mdawn} &= 0.45 && \text{(we call this $H_a$)} \\
+    \prob{M = \mdusk} &= 0.45  && \text{(we call this $H_u$)} \\
+    H_n & = 1 - (H_a + H_u) 
+\end{align*}
+
+Let's work through case $E_n$ first, as that is the easiest.
+(Though perhaps it isn't that helpful as we end up shortcutting through the actual Bayesian stuff.)
+We compute all of the conditional probabilities from needed for the right hand side of equation~(\ref{eq:bayesH}).
+
+
+The probability of getting $E_n$ if $H_a$ is true is zero. That is
+$\condprob{E_n}{H_a} = 0$.
+There is no way we could get experimental result $H_n$ if the plaintext message is the \mdawn\ message.
+Similarly 
+$\condprob{E_n}{H_u} = 0$.
+And because $H_n = 1 - (H_a + H_u)$, we know that $\condprob{E_n}{H_n}$ = 1.
+
+We don't need to compute \prob{E_n} for this case as long as we know it isn't zero.\footnote{It isn't zero}.
+
+And that gives us \condprob{H_a}{E_n} (the probability that $H_a$ is true given the experimental result $E_n$)
+
+\begin{align*}
+    \condprob{H_a}{E_n} &= \frac{\condprob{E_n}{H_a}}{\prob{E_n}} \\
+                        &= \frac{0 \cdot 0.45}{\prob{E_n}} \\
+                        & 0 
+\end{align*}
+The same holds for $\condprob{H_u}{E_n}$. And since $\condprob{H_n}{E_n}$ is just what is left over from the sum of  $\condprob{H_a}{E_n}$ and $\condprob{H_u}{E_n}$, we know that the probability that the plaintext is neither the \mdusk\ message nor the \mdawn\ message given $E_n$ is 1.
+
+
+
 
 \end{document}
 
