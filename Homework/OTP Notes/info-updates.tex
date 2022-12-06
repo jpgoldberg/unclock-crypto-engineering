@@ -1,6 +1,9 @@
 \documentclass{article}
 
-\usepackage[probability,sets]{cryptocode}
+\usepackage[sets]{cryptocode}
+\newcommand{\prob}[1]{\ensuremath{\operatorname{Pr}\left( #1 \right)}}
+\newcommand{\condprob}[2]{\prob{#1\, \middle|\, #2}}
+
 \usepackage{booktabs}
 \usepackage{dcolumn}
 \newcolumntype{.}{D{.}{.}{-1}}
@@ -12,7 +15,7 @@
 To help illustrate why a key must be as long as the plaintext in order to achieve perfect secrecy, let's consider a case in which a key is 1-bit smaller than then the plaintext.
 
 Suppose the attacker has captured a ciphertext of a 14 byte (112 bit) message.
-Suppose also that the attacker very strongly suspects that the message is one of either “\texttt{attack at dawn}” or ”\texttt{attack at dusk}”.
+Suppose also that the attacker very strongly suspects that the message is one of either “\texttt{attack at dawn}” or “\texttt{attack at dusk}”.
 We will simply refer to these as the \mdusk\ message or the \mdawn\ message.
 
 If an algorithm runs through all $2^{112}$ possible pads it will give the attacker $2^{112}$ possible plaintexts.
@@ -177,6 +180,63 @@ this is exactly the same computation as for the $E_a$ just swapping $\mathcal{X}
     \caption{How a result of \(E_u\) updates our prior probabilities}
     \end{center}
 \end{table}
+
+\subsection{\(E = E_b\)}
+
+Do we learn something new when both the \mdawn\ and \mdusk\ messages show up in our experiment? You'd be right to think that the result isn't very informative; it isn't. But there is a small bit that we learn.
+The intuition is that when we exclude half of the possible $2^112$ plaintexts we still see \mdawn\ and \mdusk\ in the running, and so this lowers the chance that neither is the true plaintext. Now we do the math to see how much probability assessments are changed by such a result. (It isn't much, but it is something.)
+
+Once again, we need to work out all of the parts for the right hand side of equation~\ref{eq:bayesH}. That means finding the probability of getting $E_b$ given each of our three hypotheses. Once again, we only really need to work through calculating one of \condprob{E_b}{H_a} or \condprob{E_b}{H_u} as the others we can compute easily once we have one of those.
+
+If $H_a$ is true, the only two possible experimental results we could get are  $E_b$ and $E_a$. Given that we are generating half of all possible plaintexts, \mdusk\ should show about half the time given that it is not the true plaintext. So $\condprob{E_b}{H_a} = 0.5$.
+Similarly, if $H_u$ correct then \mdawn\ has a 50\% chance of showing up in our experiment, so \condprob{E_b}{H_u}.
+If $H_n$ is correct there is independently a 0.5 chance of \mdawn\ showing up, and there is a 0.5 chance of \mdusk\ showing up;
+So $\condprob{E_b}{H_n} = 0.25$
+
+\begin{equation}
+    \begin{split}
+        \prob{E_b}  &= \sum \condprob{E_b}{H_i}\prob{H_i} \\
+                    &= \condprob{E_b}{H_a}\prob{H_a}
+                        + \condprob{E_b}{H_u}\prob{H_u}
+                        + \condprob{E_b}{H_n}\prob{H_n} \\
+                    &= 0.5 \cdot 0.45 + 0.5 \cdot 0.45 + 0.25 \cdot 0.1 \\
+                    & 0.475
+    \end{split}
+\end{equation}
+
+\begin{equation}
+    \begin{split}
+        \condprob{H_a}{E_b}
+            &= \frac{\condprob{E_b}{H_a}\prob{H_a}}{\prob{E_b}} \\
+            &= \frac{0.5 \cdot 0.45}{0.475} \\
+            &\approx 0.474
+    \end{split}
+\end{equation}
+
+\condprob{H_u}{E_b} will be the same, and so $\condprob{H_n}{E_b} = 1 -2\condprob{H_a}{E_b} \approx 0.053$.
+
+While the results, shown in table~\ref{tab:postEb}, don't really make a substantial difference to our prior views of $H_a$ and $H_u$,
+it does cut our $H_n$ prior nearly in half.
+
+\begin{table}
+    \begin{center}
+    \begin{tabular}{l..}
+        \toprule
+        \multicolumn{1}{c}{Hypothesis}
+        & \multicolumn{1}{c}{Prior} 
+        & \multicolumn{1}{c}{Posterior from $E_b$} \\
+        \midrule
+        $H_a$                       & 0.45      & 0.474 \\
+        $H_u$                       & 0.45      & 0.474\\
+        $H_n$                       & 0.10      & 0.053 \\
+        \bottomrule
+    \end{tabular}
+    \caption{How a result of \(E_b\) updates our prior probabilities}
+    \label{tab:postEb}
+    \end{center}
+\end{table}
+
+
 
 
 
