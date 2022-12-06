@@ -156,6 +156,30 @@ So we can now update the probabilities of for each hypothesis
     \end{center}
 \end{table}
 
+\subsection{\(E = E_u\)} 
+
+Because we started out with the same prior probabilities $H_a$ and $H_u$
+this is exactly the same computation as for the $E_a$ just swapping $\mathcal{X}_a$ and $\mathcal{X}_u$. 
+
+\begin{table}
+    \begin{center}
+    \begin{tabular}{l..}
+        \toprule
+        \multicolumn{1}{c}{Hypothesis}
+        & \multicolumn{1}{c}{Prior} 
+        & \multicolumn{1}{c}{Posterior from $E_u$} \\
+        \midrule
+        $H_a$                       & 0.45      & 0 \\
+        $H_u$                       & 0.45      & 0.82 \\
+        $H_n$                       & 0.10      & 0.18 \\
+        \bottomrule
+    \end{tabular}
+    \caption{How a result of \(E_u\) updates our prior probabilities}
+    \end{center}
+\end{table}
+
+
+
 \subsection{\(E = E_n\)}
 
 Let's now work through the case where the experiment spit out neither \mdawn\ nor \mdusk. We really don't need to do the whole Bayesian thing here as we can see that that this means that we now know exactly which of our three hypotheses is true. 
