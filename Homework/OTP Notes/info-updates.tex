@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[11pt]{article}
 
 \usepackage[sets]{cryptocode}
 \newcommand{\prob}[1]{\ensuremath{\operatorname{Pr}\left( #1 \right)}}
@@ -7,26 +7,114 @@
 \usepackage{booktabs}
 \usepackage{dcolumn}
 \newcolumntype{.}{D{.}{.}{-1}}
+\usepackage{csquotes}
 
 \newcommand\mdusk{\ensuremath{\mathtt{dusk}}}
 \newcommand\mdawn{\ensuremath{\mathtt{dawn}}}
 
+\title{Imperfect Secrecy and information updating}
+\author{Jeffrey Goldberg}
+
 \begin{document}
+\maketitle
+
+This document emerged out of questions surrounding the notion of a one-time-pad and why perfect secrecy is impossible if the key is shorter than the plaintext.
+Instead of pointing people to the relevant theorems, I thought I could take the opportunity to push people toward Bayesian thinking.
+In doing so I constructed a toy example. I then decided to actually work through the math of my toy example, thinking it would be a straightforward illustration of how cool it is to use Bayesian reasoning.
+Unfortunately I found that working through the example using Bayes Rule is not at all straightforward to someone who isn't already familiar with it.
+Instead of just giving up, I continued to dig myself in deeper into trying to explain things. What you see before you is the result so far.
+
+\section{A no(ta)tional introduction}
+
+In what follows, I am going to talk a lot about conditional probability.
+Let's consider two related propositions:
+
+\begin{description}
+    \item[$\neg S$] The sun is not shining on some particular spot on Earth
+    \item[$R$] It is raining on that particular spot.  
+\end{description}
+
+What can we surmise (given our understanding of weather and the world) about $\neg S$ if $R$ happens to be true? While we know that it is possible for rain to fall where the sun is shining, in a large majority of the cases if it is raining somewhere the sun is not shining on that spot. So we can reasonably surmise that given that it is raining on the spot the sun probably isn't shining there.
+
+We write the probability of $\neg S$ as \prob{\neg S} and the probability of $R$ as \prob{R}. We write the conditional probability that the sun is shining given that it is raining as \condprob{\neg S}{R}.
+That should be read as
+\enquote{the probability of $\neg S$ given $R$}
+or \enquote{given that $R$ is true, the probability that $\neg S$ is true}.
+
+What is extremely important to understand is that the probability of $\neg S$ given $R$ is not the same as the probability of $R$ given $\neg S$.
+If the sun is not shining on a particular spot, what are the chances that it is raining on that spot? Well, it could be night. It could be cloud with no rain (it might even be snowing).
+The chances that raining given that the sun is not shining is certainly less than 50\%. 
+Contrast that with the typical whether patterns that allowed us to surmise that if $R$ holds then it is likely that $\neg S$ does too.
+
+We may not know the exact probabilities, but we do know that \condprob{\neg S}{R} is greater than \condprob{S}{\neg S}.
+
+\subsection{Bayes, hypotheses, and experiments}
+
+One of the greatest things ever is Bayes Rule or Bayes Theorem that (given some other information) allows us to compute \condprob{X}{Y} from \condprob{Y}{X}.
+There is some fascinating psychology on how humans systematically get such probability assessments wrong, but that is for another day. Instead, I am going to focus on the situation that will arise with our toy example.
+
+Suppose you are a scientist with a hypothesis, $H$, and you run an experiment that gives you result $E$ to test the hypothesis. A huge amount of 20th century statistics and data analysis techniques gave us ever more powerful ways to estimate the probability of getting your particular experimental result given your hypothesis. That is, we became very good at computing \condprob{E}{H}.
+
+But that really isn't what we are interested in.
+Knowing how likely it is to get the data given a hypothesis isn't really that interesting.
+What we want to know is \condprob{H}{E}. That is, given this evidence, $E$, how likely is hypothesis $H$. I don't care how likely my evidence is given my hypothesis; what I want to know is how likely my hypothesis is to be true given the evidence. Bayesian analysis allows us to go after that far more interesting question.
+
+\subsection{Before and after}
+
+There is a reason why Bayesian analysis wasn't as popular in the 20th century as you might think.\footnote{%
+    If you guessed that it is because Bayesian analysis is a new invention, you are mistaken. It as old as probability theory itself. 
+    It is foundational in Information Theory,
+    and it was central to the cryptanalytic advances led by Alan Turing at Bletchley Park, but it was left by the wayside in most statistics.
+}
+That reason is because you need to have some estimate of the probability that your hypothesis is true prior to your experiment.
+The Bayesian magic of getting to \condprob{H}{E} from \condprob{E}{H} requires that you have \emph{some} idea of $H$ to begin with.
+Another way of putting this is that Bayesian techniques are about \emph{updating} prior probability estimates given new evidence.
+You have to already have something you are updating.
+
+Anyway, the probability that you start with for $H$ is often called the \enquote{prior probability} and the updated estimate is called the \enquote{posterior probability}. You will see these terms below.
+
+\subsection{Semantic security}
+
+I digressed a bit, but the point is that we need to be thinking in terms of evidence updating our prior state of knowledge.
+When we consider our hypotheses as being about the plaintext of a message and our experiment as examining the content of some corresponding ciphertext we start to sneak up on the definition of semantic security.
+
+I am not going to define semantic security formally. There are plenty of places you can for for that. The essence of the notion is that examining the bits of some ciphertext gives you no more information about about the plaintext than you already had. This can be stated in terms of conditional probability.
+We are saying that having the bits of the ciphertext doesn't change your knowledge about the plaintext.
+
+It turns out that when this is formally defined it is equivalent to
+(a suitable definition of) indistinguishability under a
+chosen plaintext attacks.\footnote{%
+    The proof is left as an exercise to the reader. Well in Katz \& Lindell half of the proof is left as an exercise to the reader.
+}
+This is why distinguishers are such a big a deal.
+If you can show that an algorithm exists that can act as a distinguisher under a CPA, you know that you don't have semantic security.
+
+
+
+
+\section{The toy}
+
+Because we are talking about perfect secrecy and contrasts with it, we have no computational bounds on the algorithms run. We are not limiting ourselves to efficient algorithms.
+
 To help illustrate why a key must be as long as the plaintext in order to achieve perfect secrecy, let's consider a case in which a key is 1-bit smaller than then the plaintext.
 
-Suppose the attacker has captured a ciphertext of a 14 byte (112 bit) message.
-Suppose also that the attacker very strongly suspects that the message is one of either “\texttt{attack at dawn}” or “\texttt{attack at dusk}”.
+Suppose that we\footnote{%
+    We are the attacker here. It just became much easier to write this thing when talking about what \enquote{we} learn and \enquote{our} states of knowledge.
+}
+have captured a ciphertext of a 14 byte (112 bit) message.
+Suppose also that we very strongly suspects that the plaintext message is one of either “\texttt{attack at dawn}” or “\texttt{attack at dusk}”.
 We will simply refer to these as the \mdusk\ message or the \mdawn\ message.
 
-If an algorithm runs through all $2^{112}$ possible pads it will give the attacker $2^{112}$ possible plaintexts.
+If our algorithm runs through all $2^{112}$ possible pads it will give us all $2^{112}$ possible plaintexts.
 The two suspected messages, \mdawn\ and \mdusk, will be among them.
-The output of this algorithm will not allow the attacker to update any of their probability assessments. They learn nothing new.
+The output of this algorithm will not allow us to update any our probability assessments. We learn nothing new.
 
-But now suppose the plaintext is encrypted with a 111 bit key, and the best attack on the cipher is to brute force the key space.
-An attacker with unlimited computing power could run through all possible 111-bit keys and produce $2^{111}$ candidate plaintexts.
-$2{111}$ half of $2^{112}$.
-So the attacker has now ruled out half of all possible plaintexts,
+But now suppose the plaintext is encrypted with a 111-bit key, and the best attack on the cipher is to brute force the key space.
+With our unbounded computing power we can run through all possible 111-bit keys and produce $2^{111}$ candidate plaintexts.
+And because $2^{111}$ half of $2^{112}$
+we will have ruled out half of all possible plaintexts,
 and ruling out half of the possible plaintexts is learning something new.
+We may not know which of the $2^{111}$ candidate plaintexts is the right one, but we know that if \mdawn\ is not among them, then \mdawn\ cannot be the original message.
 
 For reasons which may or may not become clear later, I am going to call the this run of trying all $2^{111}$ keys the experiment. 
 With respect to \mdawn\ and \mdusk, there are four distinct experimental outcomes:
