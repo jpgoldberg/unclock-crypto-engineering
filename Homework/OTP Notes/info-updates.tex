@@ -161,6 +161,12 @@ original ideas about what the plaintext would be, but it also is the most inform
 The attacker learns something, though not much, with outcome $E_b$.
 It nudges the probabilities of both \mdusk\ and \mdawn\ a bit closer to 0.5.
 
+What we see is that at least some (in fact all) of the possible outcomes of working through all of the possible keys with a key size that is just 1 bit smaller then the plaintext allows us to our knowledge of the plaintext, even if just in terms of probabilities.
+Examining the contents of the ciphertext allows us to learn something new about the plaintext.
+
+Of course our algorithm required exponential time in the key size.
+But we are talking about \emph{perfect} secrecy. so we are given that power.
+
 \section{Computation}
 
 Let's give ourselves some concrete numbers to work with.
@@ -222,7 +228,10 @@ we will have to actually calculate those conditional probabilities using Bayes' 
 
 For the other three cases we are going to need to use Bayes' Rule (also known as Bayes' Theorem).
 As I said in the introduction, Bayes' Rule gives us a way to get from
-\condprob{E}{H} to \condprob{H}{E}. 
+\condprob{E}{H} to \condprob{H}{E}.
+The formulation of it that you see in definition~\ref{def:bayes} is more complicated than I would like, but it is what is needed when we are considering multiple hypotheses.
+
+I am not going to attempt to explain it here, but it really isn't that hard to understand what it is saying and why it works. It's just that that would be a whole other lecture. 
 
 \begin{definition}[Bayes' Theorem]\label{def:bayes}
 \begin{equation}\label{eq:bayesH}
@@ -234,59 +243,70 @@ where
 \end{equation}
 \end{definition}
 
-We will have $E$ range over our four different experiment outcomes.
-
-Equation~(\ref{eq:bayesH} may not be useful to you, but it is certainly useful for me as I am writing this.
+One thing that I would like to draw your attention to is that on the right hand side of the formulae, we only have the prior probabilities, \prob{H} and conditional probabilities that are all probabilities of evidence given hypotheses, \condprob{E}{H}.
+In each of the cases we look at, we will need to figure out that conditional probabilities.  
 
 \subsection{\(E = E_a\)}
 
 Let's start with experimental outcome $E_a$. That is we ran through all 111-bit keys and found the \mdawn\ message among the $2^{111}$ outputs but did not find the \mdusk\ message.
 
-We want to update our probability assignments conditioned on getting $E_a$. That is, our goal in this section is to compute \condprob{H_a}{E_a}, \condprob{H_u}{E_a}, \condprob{H_n}{E_a}.
+Our goal in this section is to compute how we adjust our probability assessments given $E_a$.
+In other words we want to compute \condprob{H_a}{E_a}, \condprob{H_u}{E_a},
+and \condprob{H_n}{E_a}. Now is a good time to read those aloud as
+\enquote{the probability that $H_a$ is true, given the experimental result $E_a$},
+\enquote{the probability that $H_u$ is true, given the experimental result $E_a$},
+and  \enquote{the probability that $H_n$ is true, given the experimental result $E_a$}. It is important to understand what we are after.
 
-We don't need to go through the Bayesian math for \condprob{H_u}{E_a}.
+
+We need to do some work to get all of the pieces on the right hand side of Bayes' Rule. We already have our prior probabilities for the hypotheses,
+as listed in equation~\ref{eq:priors}. So what we will need to figure out are
+\condprob{E_a}{H_a}, \condprob{E_a}{H_u}, and \condprob{E_a}{H_n}.
+
+We can quickly see that $\condprob{E_a}{H_u} = 0$.
 There is simply no way that $H_u$ could be true if we don't see the \mdusk\ message among our outputs. So we know that $\condprob{H_u}{E_a} = 0$.
 
-We also know that \condprob{H_n}{E_a} is just what is left over from the other two hypotheses, so $\condprob{H_n}{E_a} = 1 - \condprob{H_a}{E_a}$.
-So we will only really need to compute \condprob{H_a}{E_a} using Bayes Rule.
+This leaves us with \condprob{E_a}{H_a} and \condprob{E_a}{H_u}
+We only need to figure out one of them, because the other will just 1 minus whichever we compute. We will work on \condprob{E_a}{H_a}.
 
-
-We start by computing all of the conditional probabilities from needed for the right hand side of equation~(\ref{eq:bayesH}). This means computing the likelihood of getting $E_a$ given each of the hypotheses. 
-
-We need to first calculate the probabilities of getting the given experimental outcome $E_a$ given each of the hypotheses.
-We can immediately conclude $\condprob{E_a}{H_u} = 0$.
-If \mdusk\ is the answer, there is no way that we could get an experimental result without an \mdusk\ message.
-
-This leaves us with $H_a$ and $H_n$.
-We only need to figure out one of them, because the other will just 1 minus whichever we compute.
 Because we have gone through half of the $2^{112}$ possible messages,
-we can assume\footnote{%
-    We can make this assumption because we are already pretending that the best attack on this cipher is to go through all of the keys. If the output within that $2^{111}$ candidate plaintext space were distinguishable from random, then this assumption would not be safe.
-}
+we can assume
 anything that isn't the actual plaintext has a 0.5 probability\footnote{%
+    We can make this assumption because we are already pretending that the best attack on this cipher is to go through all of the keys.
+    If the output within that $2^{111}$ candidate plaintext space were distinguishable from random, then this assumption would not be safe.
+
     It is actually a teeny-tiny bit smaller, as one spot in the list of outputs
     is taken up by the real plaintext. So it is $(2^{111}-1)/2^{112}$ chance.
     But that differs from 0.5 by a negligible amount.)
 }
 of showing up in our experimental output.
+What this tells us that even if $H_n$ is true, we could still get $E_a$ half the time.
 So both \condprob{E_a}{H_a} and \condprob{E_a}{H_n} are 0.5.
+
+We now have 
+\begin{itemize}
+    \item $\condprob{E_a}{H_a} = 0.5$
+    \item $\condprob{E_a}{H_u} = 0$
+    \item $\condprob{E_a}{H_n} = 0.5$
+\end{itemize}
 
 Now we can compute \prob{E_a} using equation~\ref{eq:ProbE}.
 
 \begin{equation}
+    \openup 1\jot
     \begin{split}
         \prob{E_a}  &= \sum \condprob{E_a}{H_i}\prob{H_i} \\
                     &= \condprob{E_a}{H_a}\prob{H_a}
                         + \condprob{E_a}{H_u}\prob{H_u}
                         + \condprob{E_a}{H_n}\prob{H_n} \\
                     &= 0.5 \cdot 0.45 + 0 \cdot 0.45 + 0.5 \cdot 0.1 \\
-                    & 0.275
+                    &= 0.275
     \end{split}
 \end{equation}
 
 And now we have all of the values we need to plug into equation~\ref{eq:bayesH}
 
 \begin{equation}
+    \openup 1\jot
     \begin{split}
         \condprob{H_a}{E_a}
             &= \frac{\condprob{E_a}{H_a}\prob{H_a}}{\prob{E_a}} \\
@@ -295,7 +315,8 @@ And now we have all of the values we need to plug into equation~\ref{eq:bayesH}
     \end{split}
 \end{equation}
 
-So we can now update the probabilities of for each hypothesis
+So we can now update the probabilities of for each hypothesis.
+Remember that $\condprob{H_n}{E_a} = 1 - (\condprob{H_a}{E_a} + \condprob{H_u}{E_a})$.
 
 \begin{table}
     \begin{center}
@@ -303,7 +324,10 @@ So we can now update the probabilities of for each hypothesis
         \toprule
         \multicolumn{1}{c}{Hypothesis}
         & \multicolumn{1}{c}{Prior} 
-        & \multicolumn{1}{c}{Posterior from $E_a$} \\
+        & \multicolumn{1}{c}{Posterior given $E_a$} \\
+        \multicolumn{1}{c}{$H_i$}
+        & \multicolumn{1}{c}{\prob{H_i}} 
+        & \multicolumn{1}{c}{\condprob{H_i}{E_a}} \\
         \midrule
         $H_a$                       & 0.45      & 0.82 \\
         $H_u$                       & 0.45      & 0 \\
@@ -311,6 +335,7 @@ So we can now update the probabilities of for each hypothesis
         \bottomrule
     \end{tabular}
     \caption{How a result of \(E_a\) updates our prior probabilities}
+    \label{tab:postEa}
     \end{center}
 \end{table}
 
@@ -325,7 +350,10 @@ this is exactly the same computation as for the $E_a$ just swapping $\mathcal{X}
         \toprule
         \multicolumn{1}{c}{Hypothesis}
         & \multicolumn{1}{c}{Prior} 
-        & \multicolumn{1}{c}{Posterior from $E_u$} \\
+        & \multicolumn{1}{c}{Posterior given $E_u$} \\
+        \multicolumn{1}{c}{$H_i$}
+        & \multicolumn{1}{c}{\prob{H_i}} 
+        & \multicolumn{1}{c}{\condprob{H_i}{E_u}} \\
         \midrule
         $H_a$                       & 0.45      & 0 \\
         $H_u$                       & 0.45      & 0.82 \\
@@ -333,33 +361,37 @@ this is exactly the same computation as for the $E_a$ just swapping $\mathcal{X}
         \bottomrule
     \end{tabular}
     \caption{How a result of \(E_u\) updates our prior probabilities}
+    \label{tab:postEu}
     \end{center}
 \end{table}
 
 \subsection{\(E = E_b\)}
 
-Do we learn something new when both the \mdawn\ and \mdusk\ messages show up in our experiment? You'd be right to think that the result isn't very informative; it isn't. But there is a small bit that we learn.
+Do we learn something new when both the \mdawn\ and \mdusk\ messages show up in our experiment? You'd be right to think that the result isn't very informative; it isn't.
+But there is a small bit that we learn.
 The intuition is that when we exclude half of the possible $2^112$ plaintexts we still see \mdawn\ and \mdusk\ in the running, and so this lowers the chance that neither is the true plaintext. Now we do the math to see how much probability assessments are changed by such a result. (It isn't much, but it is something.)
 
 Once again, we need to work out all of the parts for the right hand side of equation~\ref{eq:bayesH}. That means finding the probability of getting $E_b$ given each of our three hypotheses. Once again, we only really need to work through calculating one of \condprob{E_b}{H_a} or \condprob{E_b}{H_u} as the others we can compute easily once we have one of those.
 
-If $H_a$ is true, the only two possible experimental results we could get are  $E_b$ and $E_a$. Given that we are generating half of all possible plaintexts, \mdusk\ should show about half the time given that it is not the true plaintext. So $\condprob{E_b}{H_a} = 0.5$.
+If $H_a$ is true, the only two possible experimental results we could get are  $E_b$ and $E_a$. Given that we are generating half of all possible plaintexts, \mdusk\ should show up about half the time given that it is not the true plaintext. So $\condprob{E_b}{H_a} = 0.5$.
 Similarly, if $H_u$ correct then \mdawn\ has a 50\% chance of showing up in our experiment, so \condprob{E_b}{H_u}.
 If $H_n$ is correct there is independently a 0.5 chance of \mdawn\ showing up, and there is a 0.5 chance of \mdusk\ showing up;
 So $\condprob{E_b}{H_n} = 0.25$
 
 \begin{equation}
+    \openup 1\jot
     \begin{split}
         \prob{E_b}  &= \sum \condprob{E_b}{H_i}\prob{H_i} \\
                     &= \condprob{E_b}{H_a}\prob{H_a}
                         + \condprob{E_b}{H_u}\prob{H_u}
                         + \condprob{E_b}{H_n}\prob{H_n} \\
                     &= 0.5 \cdot 0.45 + 0.5 \cdot 0.45 + 0.25 \cdot 0.1 \\
-                    & 0.475
+                    &= 0.475
     \end{split}
 \end{equation}
 
 \begin{equation}
+    \openup 2\jot
     \begin{split}
         \condprob{H_a}{E_b}
             &= \frac{\condprob{E_b}{H_a}\prob{H_a}}{\prob{E_b}} \\
@@ -380,6 +412,9 @@ it does cut our $H_n$ prior nearly in half.
         \multicolumn{1}{c}{Hypothesis}
         & \multicolumn{1}{c}{Prior} 
         & \multicolumn{1}{c}{Posterior from $E_b$} \\
+        \multicolumn{1}{c}{$H_i$}
+        & \multicolumn{1}{c}{\prob{H_i}} 
+        & \multicolumn{1}{c}{\condprob{H_i}{E_b}} \\
         \midrule
         $H_a$                       & 0.45      & 0.474 \\
         $H_u$                       & 0.45      & 0.474\\
@@ -390,38 +425,6 @@ it does cut our $H_n$ prior nearly in half.
     \label{tab:postEb}
     \end{center}
 \end{table}
-
-
-
-
-
-\subsection{\(E = E_n\)}
-
-Let's now work through the case where the experiment spit out neither \mdawn\ nor \mdusk. We really don't need to do the whole Bayesian thing here as we can see that that this means that we now know exactly which of our three hypotheses is true. 
-
-
-We compute all of the conditional probabilities from needed for the right hand side of equation~(\ref{eq:bayesH}).
-
-
-The probability of getting $E_n$ if $H_a$ is true is zero. That is
-$\condprob{E_n}{H_a} = 0$.
-There is no way we could get experimental result $H_n$ if the plaintext message is the \mdawn\ message.
-Similarly 
-$\condprob{E_n}{H_u} = 0$.
-And because $H_n = 1 - (H_a + H_u)$, we know that $\condprob{E_n}{H_n}$ = 1.
-
-We don't need to compute \prob{E_n} for this case as long as we know it isn't zero.\footnote{It isn't zero}.
-
-And that gives us \condprob{H_a}{E_n} (the probability that $H_a$ is true given the experimental result $E_n$)
-
-\begin{align*}
-    \condprob{H_a}{E_n} &= \frac{\condprob{E_n}{H_a}}{\prob{E_n}} \\
-                        &= \frac{0 \cdot 0.45}{\prob{E_n}} \\
-                        & 0 
-\end{align*}
-The same holds for $\condprob{H_u}{E_n}$. And since $\condprob{H_n}{E_n}$ is just what is left over from the sum of  $\condprob{H_a}{E_n}$ and $\condprob{H_u}{E_n}$, we know that the probability that the plaintext is neither the \mdusk\ message nor the \mdawn\ message given $E_n$ is 1.
-
-
 
 
 \end{document}
