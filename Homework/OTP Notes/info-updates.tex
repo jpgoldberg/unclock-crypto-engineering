@@ -4,6 +4,9 @@
 \newcommand{\prob}[1]{\ensuremath{\operatorname{Pr}\left( #1 \right)}}
 \newcommand{\condprob}[2]{\prob{#1\, \middle|\, #2}}
 
+\usepackage{amsthm}
+\newtheorem{definition}{Definition}
+
 \usepackage{booktabs}
 \usepackage{dcolumn}
 \newcolumntype{.}{D{.}{.}{-1}}
@@ -89,12 +92,7 @@ chosen plaintext attacks.\footnote{%
 This is why distinguishers are such a big a deal.
 If you can show that an algorithm exists that can act as a distinguisher under a CPA, you know that you don't have semantic security.
 
-
-
-
 \section{The toy}
-
-Because we are talking about perfect secrecy and contrasts with it, we have no computational bounds on the algorithms run. We are not limiting ourselves to efficient algorithms.
 
 To help illustrate why a key must be as long as the plaintext in order to achieve perfect secrecy, let's consider a case in which a key is 1-bit smaller than then the plaintext.
 
@@ -105,9 +103,24 @@ have captured a ciphertext of a 14 byte (112 bit) message.
 Suppose also that we very strongly suspects that the plaintext message is one of either “\texttt{attack at dawn}” or “\texttt{attack at dusk}”.
 We will simply refer to these as the \mdusk\ message or the \mdawn\ message.
 
-If our algorithm runs through all $2^{112}$ possible pads it will give us all $2^{112}$ possible plaintexts.
+We can characterize our prior suspicions as three competing hypotheses:
+
+\begin{description}
+    \item[$H_a$] The plaintext is “\texttt{attack at dawn}”.,
+    \item[$H_u$] The plaintext is “\texttt{attack at dusk}”.
+    \item[$H_n$] The plaintext is neither of those.\footnote{%
+        We don't really need to define this as a separate hypothesis. It is simply $\neg H_a \land \neg H_u$, but it turned out easier to write this up if at times I pretend it is a separate hypothesis.}
+\end{description}
+Exactly one of those hypotheses must be true.
+
+If our algorithm runs through all $2^{112}$ possible pads,\footnote{%
+    Because we are talking about perfect secrecy,
+    we have no computational bounds on the algorithms run.
+    We are not limiting ourselves to efficient algorithms.}
+it will give us all $2^{112}$ possible plaintexts.
 The two suspected messages, \mdawn\ and \mdusk, will be among them.
-The output of this algorithm will not allow us to update any our probability assessments. We learn nothing new.
+The output of this algorithm will not allow us to update our hypotheses.
+We learn nothing about the plaintext that we didn't already know even though we have some strong ideas about what the plaintext should look like.
 
 But now suppose the plaintext is encrypted with a 111-bit key, and the best attack on the cipher is to brute force the key space.
 With our unbounded computing power we can run through all possible 111-bit keys and produce $2^{111}$ candidate plaintexts.
@@ -116,7 +129,7 @@ we will have ruled out half of all possible plaintexts,
 and ruling out half of the possible plaintexts is learning something new.
 We may not know which of the $2^{111}$ candidate plaintexts is the right one, but we know that if \mdawn\ is not among them, then \mdawn\ cannot be the original message.
 
-For reasons which may or may not become clear later, I am going to call the this run of trying all $2^{111}$ keys the experiment. 
+I am going to call the this run of trying all $2^{111}$ keys the experiment. 
 With respect to \mdawn\ and \mdusk, there are four distinct experimental outcomes:
 
 \begin{enumerate}
@@ -129,27 +142,89 @@ With respect to \mdawn\ and \mdusk, there are four distinct experimental outcome
     \item\label{en:both} Both \mdawn\ and \mdusk\ are among the $2^{111}$ outputs.
     We will call this experimental outcome $E_b$.
 \end{enumerate}
+The result of the experiment must be exactly one of those outcomes.
 
-In experimental outcome $E_a$ the attacker no knows that the probability of the message being \texttt{attack at dusk} is zero.
-The attacker has definitely learned something new.
-Likewise, in $E_u$ the attacker no knows that the probability of the message being \texttt{attack at dawn} is zero.
-The attacker has also learned something new.
+If we get experimental outcome $E_a$
+we learn that $H_u$ must be false.
+There is no way that the plaintext could have been the \mdusk\ message,
+and so we have definitely learned something new.
+Our experiment and the evidence it provides allows us to revise at least one of our hypotheses.
 
-In the experimental outcome that neither is in the output ($E_n$) the attacker learns
-that neither could have been the plaintext and so has to treat the probability of both suspected messages to zero. The attacker may not like it, but this is the case where they learn the most.
+Similarly, if we get $E_u$ we know that $H_a$ must be false.
+The evidence from our experiment allows us to revise at least one of our prior hypotheses.
+
+If our experiment yields $E_n$,
+we learn that neither $H_a$ nor $H_u$ can be true and that $H_n$ must be true.
+This may not be to our liking, as it shows that we were really wrong in our
+original ideas about what the plaintext would be, but it also is the most informative outcome. It dramatically changes our probability judgements of the hypotheses.
 
 The attacker learns something, though not much, with outcome $E_b$.
 It nudges the probabilities of both \mdusk\ and \mdawn\ a bit closer to 0.5.
 
 \section{Computation}
 
-We have three hypotheses, \mdawn, \mdusk, and neither.
-We have four possible types of events given our $2^{111}$ possible types of keys.
+Let's give ourselves some concrete numbers to work with.
+Suppose that before examining the contents to the ciphertext, we 
+suppose that there is a 45\% chance that the plaintext is the \mdawn\ message,
+and that there is also a 45\% chance that the plaintext is the \mdusk\ message.
+This leaves us with a 10\% chance that it is neither.
+We spell out these prior probabilities in equation~\ref{eq:priors}.
 
-Because we are talking about how we are updating probabilities, Bayes' Rule is what we will use.
+\begin{equation}\label{eq:priors}
+\begin{split}
+    \prob{H_a} &= 0.45\\
+    \prob{H_u} &= 0.45\\
+    \prob{H_n} &= 0.10
+\end{split}
+\end{equation}
 
-For any particular experimental outcome, $E$ we can update the probability of each hypothesis using Bayes Rule.
+We want to know how each of the four possible experimental outcomes adjusts those probabilities.
 
+\subsection{\(E = E_n\)}
+
+Let's first consider $E_n$, where neither the \mdawn\ message nor the \mdusk\ message appear among our candidate plaintexts.
+It should clear that we simply rule out $H_a$ and $H_u$,
+and we recognize that $H_n$ must be true.
+
+\begin{table}
+    \begin{center}
+    \begin{tabular}{l..}
+        \toprule
+        \multicolumn{1}{c}{Hypothesis}
+        & \multicolumn{1}{c}{Prior} 
+        & \multicolumn{1}{c}{Posterior from $E_n$} \\
+        \multicolumn{1}{c}{$H_i$}
+        & \multicolumn{1}{c}{\prob{H_i}} 
+        & \multicolumn{1}{c}{\condprob{H_i}{E_n}} \\
+        \midrule
+        $H_a$                       & 0.45      & 0 \\
+        $H_u$                       & 0.45      & 0 \\
+        $H_n$                       & 0.10      & 1 \\
+        \bottomrule
+    \end{tabular}
+    \caption{How a result of \(E_n\) updates our prior probabilities}
+    \label{tab:postEn}
+    \end{center}
+\end{table}
+
+Although what we see in table~\ref{tab:postEb} is obvious, let me use this simple case to introduce ways of talking about parts of this.
+
+When we say that it is obvious that we can rule out $H_a$ we are saying so because there is no way that $H_a$ can be true if we get $E_n$.
+That is $\condprob{H_a}{E_b} = 0$.
+In the same way, we are saying that noting that $\condprob{H_u}{E_b} = 0$.
+And because exactly one of our three hypotheses must be true, we know that 
+$\condprob{H_n}{E_b} = 1$.
+
+I am saying all of that multiple times because in what follows
+we will have to actually calculate those conditional probabilities using Bayes' Rule.
+
+\subsection{Bayes' Rule}
+
+For the other three cases we are going to need to use Bayes' Rule (also known as Bayes' Theorem).
+As I said in the introduction, Bayes' Rule gives us a way to get from
+\condprob{E}{H} to \condprob{H}{E}. 
+
+\begin{definition}[Bayes' Theorem]\label{def:bayes}
 \begin{equation}\label{eq:bayesH}
     \condprob{H_i}{E} = \frac{\condprob{E}{H_i}\prob{H_i}}{\prob{E}}
 \end{equation}
@@ -157,19 +232,11 @@ where
 \begin{equation}\label{eq:ProbE}
     \prob{E} = \sum \condprob{E}{H_i}\prob{H_i}
 \end{equation}
+\end{definition}
 
 We will have $E$ range over our four different experiment outcomes.
 
 Equation~(\ref{eq:bayesH} may not be useful to you, but it is certainly useful for me as I am writing this.
-
-Let's give ourselves some concrete numbers to work with.
-Before conducting the experiment the attacker assigns these probabilities:
-
-\begin{align*}
-    \prob{M = \mdawn} &= 0.45 && \text{(we call this $H_a$)} \\
-    \prob{M = \mdusk} &= 0.45  && \text{(we call this $H_u$)} \\
-    H_n & = 1 - (H_a + H_u) 
-\end{align*}
 
 \subsection{\(E = E_a\)}
 
