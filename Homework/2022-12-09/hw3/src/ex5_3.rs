@@ -18,7 +18,7 @@ impl fmt::Display for Collision {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "msg1: {:05X?}\nmsg2: {:05X?}\nhash: {:02X?}",
+            "msg1: {:08X?}\nmsg2: {:08X?}\nhash: {:02X?}",
             self.input1, self.input2, self.hash_value
         )?;
         write!(f, "\nAfter {} distinct hashes", self.count,)?;
@@ -62,7 +62,7 @@ pub(crate) fn hash_collisions(length: u16) -> Option<Collision> {
     let mut acg = AffineGenerator::new(seed);
 
     let mut count = 0_usize;
-    loop {
+    while count <= u32::MAX as usize {
         count += 1;
         let message = acg.next().expect("the ACG cycles and never ends");
 
@@ -77,20 +77,18 @@ pub(crate) fn hash_collisions(length: u16) -> Option<Collision> {
             .collect();
 
         if let Some(old_message) = trie.insert(hash.to_vec(), message) {
-            if old_message != message {
-                // we have a collision
-                return Some(Collision {
-                    input1: message,
-                    input2: old_message,
-                    hash_value: hash,
-                    count,
-                    length,
-                });
-            } else {
-                return None;
-            };
+            // we have a collision
+            return Some(Collision {
+                input1: message,
+                input2: old_message,
+                hash_value: hash,
+                count,
+                length,
+            });
         }
     }
+
+    None
 }
 
 // If I watned to learn generics, I could do this withou fixing it at u32
