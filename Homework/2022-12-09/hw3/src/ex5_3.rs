@@ -1,24 +1,25 @@
+#![allow(dead_code)]
+
 use radix_trie::Trie;
 use rand::prelude::*;
 use sha2::{Digest, Sha512};
 use std::fmt;
 
-#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct Collision {
-    input1: Vec<u8>,
-    input2: Vec<u8>,
+    input1: u32,
+    input2: u32,
     hash_value: Vec<u8>,
     count: usize,
     input_collisions: usize,
-    length: usize, // length of truncated hash in bits
+    length: u16, // length of truncated hash in bits
 }
 
 impl fmt::Display for Collision {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "msg1: {:02X?}\nmsg2: {:02X?}\nhash: {:02X?}",
+            "msg1: {:05X?}\nmsg2: {:05X?}\nhash: {:02X?}",
             self.input1, self.input2, self.hash_value
         )?;
         write!(
@@ -39,10 +40,9 @@ impl fmt::Display for Collision {
     }
 }
 
-#[allow(dead_code)]
 /// Returns a collision of length-bit hashes or None if none is found
 /// Panics if length is not a positive multiple of 8 less than 49
-pub(crate) fn hash_collisions(length: usize) -> Collision {
+pub(crate) fn hash_collisions(length: u16) -> Collision {
     if length > 48 {
         panic!("length too long")
     }
@@ -56,24 +56,29 @@ pub(crate) fn hash_collisions(length: usize) -> Collision {
     let mut hasher = Sha512::new();
 
     // We need a trie to store both the hashes and the messages that led to them
-    let mut trie: Trie<Vec<u8>, [u8; 4]> = radix_trie::Trie::new();
+    let mut trie: Trie<Vec<u8>, u32> = radix_trie::Trie::new();
 
     // should I pick input randomly or just count from 0?
+    // I know! I will randomly seed an LCG and draw from that.
+    // A properly defined LCG will cycle through all of the values.
+
     let mut rng = rand::thread_rng();
-    let mut message = [0u8; 4];
+    let seed: u32 = rng.gen();
+    let mut acg = AffineGenerator::new(seed);
 
     let mut count = 0_usize;
     let mut input_collisions = 0_usize;
     loop {
         count += 1;
-        rng.fill_bytes(&mut message);
-        hasher.update(message);
+        let message = acg.next().expect("the ACG cycles and never ends");
+
+        hasher.update(message.to_be_bytes());
 
         // I feel like there must be a better way of getting my truncated hash
         let hash: Vec<u8> = hasher
             .finalize_reset()
             .iter()
-            .take(bytes_to_take)
+            .take(bytes_to_take.into())
             .copied()
             .collect();
 
@@ -81,8 +86,8 @@ pub(crate) fn hash_collisions(length: usize) -> Collision {
             if old_message != message {
                 // we have a collision
                 return Collision {
-                    input1: message.to_vec(),
-                    input2: old_message.to_vec(),
+                    input1: message,
+                    input2: old_message,
                     hash_value: hash,
                     count: count - input_collisions,
                     input_collisions,
@@ -92,6 +97,48 @@ pub(crate) fn hash_collisions(length: usize) -> Collision {
                 input_collisions += 1;
             };
         }
+    }
+}
+
+// If I watned to learn generics, I could do this withou fixing it at u32
+/// A 32-bit Affine Congruential Generator
+/// (frequently called a Linear Congruential Generator)
+pub(crate) struct AffineGenerator {
+    multiplier: u32,
+    increment: u32,
+    state: u32,
+    modulus_bits: u8,
+}
+
+impl AffineGenerator {
+    pub(crate) fn new(seed: u32) -> Self {
+        // I haven't generalized this for different sizes,
+        // so the modulus of 2^32 is hard coded here.
+        let modulus_bits = 32_u8;
+
+        // just using fixed, known good values. We'll take the Knuth one
+        let multiplier: u32 = 1664525;
+        let increment: u32 = 1013904223;
+
+        Self {
+            state: seed,
+            increment,
+            multiplier,
+            modulus_bits,
+        }
+    }
+}
+
+impl Iterator for AffineGenerator {
+    type Item = u32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.state = self
+            .state
+            .wrapping_mul(self.multiplier)
+            .wrapping_add(self.increment);
+
+        Some(self.state)
     }
 }
 
