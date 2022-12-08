@@ -34,7 +34,6 @@ pbirthday <- function(n, d) {
 And a run of it confirms that $2^{32}$ inputs is more than sufficient.
 
 ```Rconsole
-> source("/Users/jeffrey/Dropbox/AWS/AGConf7/birthday.R", encoding = "UTF-8")
 > pbirthday(2^32, 2^48)
 [1] 1
 ```
