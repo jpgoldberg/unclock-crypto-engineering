@@ -57,25 +57,73 @@ So my strategy will be to generate 32 bit inputs, and put those inputs as values
 I have actually added these computations to my code for talking about a found collision. Here is a sample output with an 8-bit hash
 
 ```
-msg1: [67, 02, BD, 60]
-msg2: [95, 0E, 64, 70]
-hash: [79]
-After 12 distinct hashes with 0 input collisions
-Going 0.05 of the way through the space
-With a 0.23 probability of getting a collision by this point
+msg1: 8A2C9267
+msg2: 78D156DF
+hash: [CD]
+After 21 distinct hashes
+Going 8.203% of the way through the space
+With a 0.57 probability of getting a collision by this point
 ```
 
 and here is a sample with a 32 bit hash.
 
 ```
-msg1: [D0, 45, 2F, 7F]
-msg2: [85, 44, C1, 6A]
-hash: [50, DE, 40, AC]
-After 105034 distinct hashes with 3 input collisions
-Going 0.00 of the way through the space
-With a 0.72 probability of getting a collision by this point
+msg1: 957E5A48
+msg2: 2F93C5F6
+hash: [F0, D4, 10, 4E]
+After 130886 distinct hashes
+Going 0.003% of the way through the space
+With a 0.86 probability of getting a collision by this point
 ```
 
-Because I am picking random 32 bit sequences to hash, there is some possibility that I will pick the same one multiple times. I could increase my input space, but that really eats memory usage.
+Here is a bad luck (took well above average time) example with the 48-bit hashes.
+
+```
+msg1: 527A99B4
+msg2: FB587724
+hash: [0C, 3F, E8, B1, E4, 4E]
+After 38464441 distinct hashes
+Going 0.000% of the way through the space
+With a 0.93 probability of getting a collision by this point
+```
+
+I had spent a lot of time playing with criterion the first week,
+so I didn't work on that now. I believe that time and space requirements grow
+proportionally with $2^{s/2}$ where _s_ is the length in bits of the truncated hash.
+Though I can also say that if you run the 48-bit case on a Mac Mini with only 8GB of universal memory, your time is spent with swapping, and tries really fail when written to disk. 
+
+Questions that remain for me from this include
+
+1. Are there significant advantages of one kind of trie over others for this kind to data?
+
+    I had not been aware of different kinds of tries until, well, a few minutes ago.
+    So I had picked the first thing I found on crates.io that appeared to do the job.
+
+2. I still find myself struggling with getting things into and from the types that RustCrypto demands.
+Is there a better way of doing what I have here to get my truncated `Vec<u8>`?
+   
+   ```rust
+      let mut hasher = Sha512::new();
+      // snip
+      loop {
+        // snip
+        hasher.update(message.to_be_bytes());
+
+        // I feel like there must be a better way of getting my truncated hash
+        let hash: Vec<u8> = hasher
+            .finalize_reset()
+            .iter()
+            .take(bytes_to_take.into())
+            .copied()
+            .collect();
+        // snip
+      }
+   ```
+   
+   I feel like there should be a simpler way of getting the first _n_ bytes of what
+   `finalize_reset()` returns.
+   I will note that this is better than what I first had, but clippy taught me
+   about `.copied()` which replaces my `.map(|b| &b)`
+
 
 
