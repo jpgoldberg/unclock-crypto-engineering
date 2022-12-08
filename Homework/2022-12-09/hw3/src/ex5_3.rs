@@ -62,7 +62,7 @@ pub(crate) fn hash_collisions(length: usize) -> Collision {
     let mut rng = rand::thread_rng();
     let mut message = [0u8; 4];
 
-    let mut count = 32_usize;
+    let mut count = 0_usize;
     let mut input_collisions = 0_usize;
     loop {
         count += 1;
