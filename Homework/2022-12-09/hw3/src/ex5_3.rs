@@ -117,7 +117,7 @@ impl Collision {
         let n = self.count as u32;
         let d = 2_f64.powf(self.length as f64);
 
-        let p = match self.length <= 16 {
+        match self.length <= 16 {
             true => {
                 let mut prod = 1.0;
                 for i in 1..n {
@@ -130,12 +130,7 @@ impl Collision {
                 let e = -(n * (n - 1.0)) / (2.0 * d);
                 1.0 - e.exp()
             }
-        };
-
-        // Hey clippy. I am explicitly creating a temporary variable
-        // so that I can see it when debugging. The compiler will
-        // optimize away my verbosity.
-        p
+        }
     }
 }
 
@@ -172,6 +167,7 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn test_48() {
         let c = hash_collisions(48);
 
