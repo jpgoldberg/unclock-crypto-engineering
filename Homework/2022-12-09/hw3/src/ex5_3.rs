@@ -28,8 +28,8 @@ impl fmt::Display for Collision {
         )?;
         write!(
             f,
-            "\nGoing {:0.2} of the way through the space",
-            self.portion(),
+            "\nGoing {:0.3}% of the way through the space",
+            self.portion() * 100.0,
         )?;
         write!(
             f,
