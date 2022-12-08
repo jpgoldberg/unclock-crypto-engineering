@@ -1,9 +1,8 @@
 #![allow(dead_code)]
 
-use radix_trie::Trie;
 use rand::prelude::*;
 use sha2::{Digest, Sha512};
-use std::fmt;
+use std::{collections::HashMap, fmt};
 
 #[derive(Debug, Clone)]
 pub struct Collision {
@@ -51,7 +50,8 @@ pub(crate) fn hash_collisions(length: u16) -> Option<Collision> {
     let mut hasher = Sha512::new();
 
     // We need a trie to store both the hashes and the messages that led to them
-    let mut trie: Trie<Vec<u8>, u32> = radix_trie::Trie::new();
+
+    let mut data: HashMap<Vec<u8>, u32> = HashMap::new();
 
     // should I pick input randomly or just count from 0?
     // I know! I will randomly seed an LCG and draw from that.
@@ -76,7 +76,7 @@ pub(crate) fn hash_collisions(length: u16) -> Option<Collision> {
             .copied()
             .collect();
 
-        if let Some(old_message) = trie.insert(hash.to_vec(), message) {
+        if let Some(old_message) = data.insert(hash.to_vec(), message) {
             // we have a collision
             return Some(Collision {
                 input1: message,

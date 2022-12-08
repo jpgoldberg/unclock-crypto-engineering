@@ -14,10 +14,10 @@ The text of the assignments live in the second have of the [Session 3 Notes](htt
 > How long would you expect your program to take for SHA-512-256? For SHA-512?
 
 This should be straight forward, though I am not sure whether I will need to save data to disk or whether this can all be done in memory.
-The actual hashes can be stored in a trie,
-so that won't be too much of a memory burden.
 But if I am going to store the pre-image that resulted in each hash with the hash,
 that will space requirement will grow.
+
+(In my earlier misguided thinking, I though a hashmap had to store key key separately, and so I tried a trie. The name `HashMap` should have clued me in)
 
 I am going to limit my inputs  to $2^{32}$ so that I can store
 inputs in a `u32`.
@@ -52,7 +52,7 @@ $$\begin{equation}
 p(n, d) =\prod_{i=1}^{n-1}\left(1- \frac{i}{d}\right)
 \end{equation}$$
 
-So my strategy will be to generate 32 bit inputs, and put those inputs as values in a trie that is keyed by the truncated hashes.
+So my strategy will be to generate 32 bit inputs, and put those inputs as values in a HashMap that is keyed by the truncated hashes.
 
 I have actually added these computations to my code for talking about a found collision. Here is a sample output with an 8-bit hash
 
@@ -94,12 +94,7 @@ Though I can also say that if you run the 48-bit case on a Mac Mini with only 8G
 
 Questions that remain for me from this include
 
-1. Are there significant advantages of one kind of trie over others for this kind to data?
-
-    I had not been aware of different kinds of tries until, well, a few minutes ago.
-    So I had picked the first thing I found on crates.io that appeared to do the job.
-
-2. I still find myself struggling with getting things into and from the types that RustCrypto demands.
+1. I still find myself struggling with getting things into and from the types that RustCrypto demands.
 Is there a better way of doing what I have here to get my truncated `Vec<u8>`?
    
    ```rust
@@ -119,7 +114,7 @@ Is there a better way of doing what I have here to get my truncated `Vec<u8>`?
         // snip
       }
    ```
-   
+
    I feel like there should be a simpler way of getting the first _n_ bytes of what
    `finalize_reset()` returns.
    I will note that this is better than what I first had, but clippy taught me
