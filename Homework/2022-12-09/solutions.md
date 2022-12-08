@@ -14,14 +14,17 @@ The text of the assignments live in the second have of the [Session 3 Notes](htt
 > How long would you expect your program to take for SHA-512-256? For SHA-512?
 
 This should be straight forward, though I am not sure whether I will need to save data to disk or whether this can all be done in memory.
+The actual hashes can be stored in a trie,
+so that won't be too much of a memory burden.
+But if I am going to store the pre-image that resulted in each hash with the hash,
+that will space requirement will grow.
 
-Let's see ahead of time. 48 bits is six bytes.
-In the worst case, we need to store nearly $2^{48}$ truncated hashes, but it really shouldn't be much more than $2^{24}$. I am going to limit things to $2^{32}$ so that I can store
+I am going to limit my inputs  to $2^{32}$ so that I can store
 inputs in a `u32`.
 It is a near certainty to have a collision at that point.
 
-For reasons I can no longer recall, I have a birthday collision approximation calculator
-in R.
+For reasons I can no longer recall,
+I have a birthday collision approximation calculator in R sitting around.
 
 ```R
 pbirthday <- function(n, d) {
@@ -38,6 +41,41 @@ And a run of it confirms that $2^{32}$ inputs is more than sufficient.
 [1] 1
 ```
 
+The particular approximation is 
+
+$$\begin{equation}
+p(n, d) \approx \exp\left(\frac{n(n-1)}{d}\right)
+\end{equation}$$
+
+For the smaller hashes we can use the exact formula
+$$\begin{equation}
+p(n, d) =\prod_{i=1}^{n-1}\left(1- \frac{i}{d}\right)
+\end{equation}$$
+
 So my strategy will be to generate 32 bit inputs, and put those inputs as values in a trie that is keyed by the truncated hashes.
+
+I have actually added these computations to my code for talking about a found collision. Here is a sample output with an 8-bit hash
+
+```
+msg1: [67, 02, BD, 60]
+msg2: [95, 0E, 64, 70]
+hash: [79]
+After 12 distinct hashes with 0 input collisions
+Going 0.05 of the way through the space
+With a 0.23 probability of getting a collision by this point
+```
+
+and here is a sample with a 32 bit hash.
+
+```
+msg1: [D0, 45, 2F, 7F]
+msg2: [85, 44, C1, 6A]
+hash: [50, DE, 40, AC]
+After 105034 distinct hashes with 3 input collisions
+Going 0.00 of the way through the space
+With a 0.72 probability of getting a collision by this point
+```
+
+Because I am picking random 32 bit sequences to hash, there is some possibility that I will pick the same one multiple times. I could increase my input space, but that really eats memory usage.
 
 

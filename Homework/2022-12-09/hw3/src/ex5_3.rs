@@ -103,21 +103,19 @@ impl Collision {
     }
 
     /// probability of finding a collision at or before this point
-    pub fn probability(&self) -> f64 {
+    pub fn probability(&self) -> f32 {
         // Birthday parameters are n and d for number
         // of people in the classroom and number of days in the
-        // year. I name my variable from that scheme.
+        // year. I name my variables from that scheme.
 
-        // TODO: I should do exact calculation if length is small enough
-
-        // The exact formula is \prod_{i=1}^n\left(1- \frac{i}{d}\right)
+        // The exact formula is \prod_{i=1}^{n-1}\left(1- \frac{i}{d}\right)
         // So it requires one floating point multiplication and division for
         // each d.
 
         let n = self.count as u32;
         let d = 2_f64.powf(self.length as f64);
 
-        match self.length <= 16 {
+        let p = match self.length <= 16 {
             true => {
                 let mut prod = 1.0;
                 for i in 1..n {
@@ -130,7 +128,8 @@ impl Collision {
                 let e = -(n * (n - 1.0)) / (2.0 * d);
                 1.0 - e.exp()
             }
-        }
+        };
+        p as f32
     }
 }
 
