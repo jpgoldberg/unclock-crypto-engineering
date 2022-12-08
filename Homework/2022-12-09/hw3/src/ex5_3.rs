@@ -11,7 +11,6 @@ pub struct Collision {
     input2: u32,
     hash_value: Vec<u8>,
     count: usize,
-    input_collisions: usize,
     length: u16, // length of truncated hash in bits
 }
 
@@ -22,11 +21,7 @@ impl fmt::Display for Collision {
             "msg1: {:05X?}\nmsg2: {:05X?}\nhash: {:02X?}",
             self.input1, self.input2, self.hash_value
         )?;
-        write!(
-            f,
-            "\nAfter {} distinct hashes with {} input collisions",
-            self.count, self.input_collisions,
-        )?;
+        write!(f, "\nAfter {} distinct hashes", self.count,)?;
         write!(
             f,
             "\nGoing {:0.3}% of the way through the space",
@@ -42,7 +37,7 @@ impl fmt::Display for Collision {
 
 /// Returns a collision of length-bit hashes or None if none is found
 /// Panics if length is not a positive multiple of 8 less than 49
-pub(crate) fn hash_collisions(length: u16) -> Collision {
+pub(crate) fn hash_collisions(length: u16) -> Option<Collision> {
     if length > 48 {
         panic!("length too long")
     }
@@ -67,7 +62,6 @@ pub(crate) fn hash_collisions(length: u16) -> Collision {
     let mut acg = AffineGenerator::new(seed);
 
     let mut count = 0_usize;
-    let mut input_collisions = 0_usize;
     loop {
         count += 1;
         let message = acg.next().expect("the ACG cycles and never ends");
@@ -85,16 +79,15 @@ pub(crate) fn hash_collisions(length: u16) -> Collision {
         if let Some(old_message) = trie.insert(hash.to_vec(), message) {
             if old_message != message {
                 // we have a collision
-                return Collision {
+                return Some(Collision {
                     input1: message,
                     input2: old_message,
                     hash_value: hash,
-                    count: count - input_collisions,
-                    input_collisions,
+                    count,
                     length,
-                };
+                });
             } else {
-                input_collisions += 1;
+                return None;
             };
         }
     }
@@ -155,26 +148,23 @@ impl Collision {
         // of people in the classroom and number of days in the
         // year. I name my variables from that scheme.
 
-        // The exact formula is \prod_{i=1}^{n-1}\left(1- \frac{i}{d}\right)
-        // So it requires one floating point multiplication and division for
-        // each d.
-
         let n = self.count as u32;
         let d = 2_f64.powf(self.length as f64);
 
-        let p = match self.length <= 16 {
-            true => {
-                let mut prod = 1.0;
-                for i in 1..n {
-                    prod *= 1.0 - (i as f64) / d;
-                }
-                1.0 - prod
+        let p = if self.length <= 16 {
+            // Small enough for the "exact" formula
+            // p = \prod_{i=1}^{n-1}\left(1- \frac{i}{d}\right)
+            let mut prod = 1.0;
+            for i in 1..n {
+                prod *= 1.0 - (i as f64) / d;
             }
-            false => {
-                let n = n as f64;
-                let e = -(n * (n - 1.0)) / (2.0 * d);
-                1.0 - e.exp()
-            }
+            1.0 - prod
+        } else {
+            // we use the approximate for large _d_
+            // p \approx 1 - \exp\left(\frac{n(n-1){2d}\right)
+            let n = n as f64;
+            let e = -(n * (n - 1.0)) / (2.0 * d);
+            1.0 - e.exp()
         };
         p as f32
     }
@@ -186,28 +176,28 @@ mod test {
 
     #[test]
     fn test_8() {
-        let c = hash_collisions(8);
+        let c = hash_collisions(8).unwrap();
 
         println!("{c}");
     }
 
     #[test]
     fn test_16() {
-        let c = hash_collisions(16);
+        let c = hash_collisions(16).unwrap();
 
         println!("{c}");
     }
 
     #[test]
     fn test_24() {
-        let c = hash_collisions(24);
+        let c = hash_collisions(24).unwrap();
 
         println!("{c}");
     }
 
     #[test]
     fn test_32() {
-        let c = hash_collisions(32);
+        let c = hash_collisions(32).unwrap();
 
         println!("{c}");
     }
@@ -215,7 +205,7 @@ mod test {
     #[test]
     #[ignore]
     fn test_48() {
-        let c = hash_collisions(48);
+        let c = hash_collisions(48).unwrap();
 
         println!("{c}");
     }
