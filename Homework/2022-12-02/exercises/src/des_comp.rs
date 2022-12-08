@@ -28,3 +28,30 @@ pub(crate) fn des_comp_check(key: [u8; 8], plaintext: [u8; 8]) -> bool {
 fn comp_u8_8(arr: &[u8; 8]) -> [u8; 8] {
     arr.map(|b| !b)
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use rand::prelude::*;
+
+    #[test]
+    // this isn't really a unit test of the code, but an actual
+    // test of the complementarity property.
+    fn test_des_comp() {
+        let mut rng = rand::thread_rng();
+        let mut rand_key = [0u8; 8];
+        let mut rand_block = [0u8; 8];
+
+        let trials: u32 = 100;
+        let mut fails: u32 = 0;
+        for _ in 1..=trials {
+            rng.fill_bytes(&mut rand_key);
+            rng.fill_bytes(&mut rand_block);
+
+            if !des_comp_check(rand_key, rand_block) {
+                fails += 1;
+            }
+        }
+        assert_eq!(fails, 0, "{fails} failure of {trials} trials");
+    }
+}
