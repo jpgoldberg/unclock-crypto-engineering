@@ -139,3 +139,9 @@ Is there a better way of doing what I have here to get my truncated `Vec<u8>`?
 ## Exercise 5.4
 
 How long to find a pre-image for a truncated 16 bit hash? Shouldn't be long at all.
+
+## Exercise Compare hash speeds
+
+Been there, done that. Blake3 is a thing of beauty. And the keyed hashing mechanism is just perfection. I love the way the key gets used in each block compression.
+The Keccek sponge construction is cool, and I understand why it won at the time,
+but I'm confident that if people were reviewing now, Blake2 (the candidate at the time) would have won.
