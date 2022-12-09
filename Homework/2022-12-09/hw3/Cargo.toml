@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 crypto-common = "0.1.6"
+hex-literal = "0.3.4"
 radix_trie = "0.2.1"
 rand = "0.8.5"
 sha2 = "0.10.6"

@@ -89,8 +89,23 @@ With a 0.93 probability of getting a collision by this point
 
 I had spent a lot of time playing with criterion the first week,
 so I didn't work on that now. I believe that time and space requirements grow
-proportionally with $2^{s/2}$ where _s_ is the length in bits of the truncated hash.
-Though I can also say that if you run the 48-bit case on a Mac Mini with only 8GB of universal memory, your time is spent with swapping, and tries really fail when written to disk. 
+proportionally with $2^{\ell/2}$ 
+where $\ell$ is the length in bits of the truncated hash.
+So
+
+$$\begin{equation}
+t = k2^{\frac{\ell}2}
+\end{equation}$$
+
+Solving for $k$ gives us $k = 2^{-\frac{\ell}2}t$.
+
+Extrapolating to a hash of 256 and 512 bits doesn't really make sense, as the techniques used so far (in which all of the hashes and their pre-images reside in memory) won't hold. So such extrapolation can only offer a lower bound.
+
+Rounding up to about 300s for a (bit longer than average, but 5 minutes is a rounder number) run of SHA-512-48 case on my gear,
+we plug in $t=300$ and $\ell = 48$ to get $k \approx  1.8\cdot10^{-5}$. (I am doing a lot of rounding.)
+
+So then for the 256-bit hashes we get something like $6 \cdot 10^{33}$ seconds,\
+and for the 512-bit hashes we get $2 \cdot 10^{77}$. I could try to put those in terms of trillions of universe ages, but the point is clear without doing so. 
 
 Questions that remain for me from this include
 
@@ -121,4 +136,6 @@ Is there a better way of doing what I have here to get my truncated `Vec<u8>`?
    about `.copied()` which replaces my `.map(|b| &b)`
 
 
+## Exercise 5.4
 
+How long to find a pre-image for a truncated 16 bit hash? Shouldn't be long at all.
