@@ -49,14 +49,10 @@ pub(crate) fn hash_collisions(length: u16) -> Option<Collision> {
     // is faster than using digest() each time.
     let mut hasher = Sha512::new();
 
-    // We need a trie to store both the hashes and the messages that led to them
-
     let mut data: HashMap<Vec<u8>, u32> = HashMap::new();
 
-    // should I pick input randomly or just count from 0?
     // I know! I will randomly seed an LCG and draw from that.
     // A properly defined LCG will cycle through all of the values.
-
     let mut rng = rand::thread_rng();
     let seed: u32 = rng.gen();
     let mut acg = AffineGenerator::new(seed);
@@ -91,7 +87,8 @@ pub(crate) fn hash_collisions(length: u16) -> Option<Collision> {
     None
 }
 
-// If I watned to learn generics, I could do this withou fixing it at u32
+// If understood how to work with generics,
+// I could do this without fixing it at u32
 /// A 32-bit Affine Congruential Generator
 /// (frequently called a Linear Congruential Generator)
 pub(crate) struct AffineGenerator {
