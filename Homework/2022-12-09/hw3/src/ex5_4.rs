@@ -3,7 +3,7 @@ use rand::Rng;
 use sha2::{Digest, Sha512};
 
 #[allow(dead_code)]
-pub(crate) fn find_preimage_for_prefix(prefix: Vec<u8>) -> u32 {
+pub fn find_preimage_for_prefix(prefix: Vec<u8>) -> u32 {
     if prefix.len() > 3 {
         panic!("Nope. I won't try that!")
     }
@@ -33,6 +33,15 @@ mod test {
     #[test]
     fn test_ex5_4() {
         let prefix = hex!("3D 4B");
+
+        let pre_image = find_preimage_for_prefix(prefix.into());
+
+        println!("{}", pre_image);
+    }
+
+    #[test]
+    fn test_3_bytes() {
+        let prefix = [1_u8, 2, 3];
 
         let pre_image = find_preimage_for_prefix(prefix.into());
 
