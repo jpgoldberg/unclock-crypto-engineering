@@ -104,13 +104,13 @@ benchmarks instead of as unit tests, I have much faster times and more reliable 
 
 Extrapolating to a hash of 256 and 512 bits doesn't really make sense, as the techniques used so far (in which all of the hashes and their pre-images reside in memory) won't hold. So such extrapolation can only offer a lower bound.
 
-|bits  | time    | k   |
-|------|---------|-----|
-|  8   | 6.5 µs  |     |
-| 16   | 102 µs  |     |
-| 24   | 1.7 ms  |     |
-| 32   | 23.6 ms |     |
-| 48   | 12.4 s  |     |
+|bits  | time    | k      |
+|------|---------|--------|
+|  8   | 6.7 µs  | 4.19e-07 |
+| 16   | 102 µs  | 3.98e-07 |
+| 24   | 1.73 ms | 4.22e-07 |
+| 32   | 27.9 ms | 4.26e-07 |
+| 48   | 14.7 s  | 8.76e-07 |
 
 
 
