@@ -36,7 +36,7 @@ impl fmt::Display for Collision {
 
 /// Returns a collision of length-bit hashes or None if none is found
 /// Panics if length is not a positive multiple of 8 less than 49
-pub(crate) fn hash_collisions(length: u16) -> Option<Collision> {
+pub fn hash_collisions(length: u16) -> Option<Collision> {
     if length > 48 {
         panic!("length too long")
     }
@@ -184,6 +184,7 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn test_24() {
         let c = hash_collisions(24).unwrap();
 
@@ -191,6 +192,7 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn test_32() {
         let c = hash_collisions(32).unwrap();
 

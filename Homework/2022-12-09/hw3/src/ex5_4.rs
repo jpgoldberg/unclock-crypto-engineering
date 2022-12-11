@@ -40,6 +40,7 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn test_3_bytes() {
         let prefix = [1_u8, 2, 3];
 
