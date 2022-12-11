@@ -99,7 +99,20 @@ t = k2^{\frac{\ell}2}
 
 Solving for $k$ gives us $k = 2^{-\frac{\ell}2}t$.
 
+Now that I am actually doing time testing under proper
+benchmarks instead of as unit tests, I have much faster times and more reliable measurements.
+
 Extrapolating to a hash of 256 and 512 bits doesn't really make sense, as the techniques used so far (in which all of the hashes and their pre-images reside in memory) won't hold. So such extrapolation can only offer a lower bound.
+
+|bits  | time    | k   |
+|------|---------|-----|
+|  8   | 6.5 µs  |     |
+| 16   | 102 µs  |     |
+| 24   | 1.7 ms  |     |
+| 32   | 23.6 ms |     |
+| 48   | 12.4 s  |     |
+
+
 
 Rounding up to about 300s for a (bit longer than average, but 5 minutes is a rounder number) run of SHA-512-48 case on my gear,
 we plug in $t=300$ and $\ell = 48$ to get $k \approx  1.8\cdot10^{-5}$. (I am doing a lot of rounding.)
