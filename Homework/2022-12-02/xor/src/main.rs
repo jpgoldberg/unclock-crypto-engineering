@@ -43,7 +43,6 @@ fn xor_bytes(a: Bytes, b: Bytes) -> Result<Bytes, Error> {
 
 #[cfg(test)]
 mod test {
-    use super::*;
 
     #[test]
     fn test_pair() {

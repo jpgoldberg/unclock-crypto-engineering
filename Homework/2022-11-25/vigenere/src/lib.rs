@@ -204,7 +204,7 @@ pub struct Vigenere {
     // The key must be a string of characters all within the alphabet
     key: Key,
 }
-// Mode to know whether we are encrypting or decryptiong
+// Mode to know whether we are encrypting or decrypting
 pub enum Mode {
     /// Encrypt
     Encrypt,
@@ -233,8 +233,8 @@ impl Vigenere {
         })
     }
 
-    pub fn new_with_alphabet(key: &str, alphabet: &String) -> Result<Self, Error> {
-        let a = alphabet.clone();
+    pub fn new_with_alphabet(key: &str, alphabet: &str) -> Result<Self, Error> {
+        let a = alphabet.to_owned();
         let alphabet: Alphabet = Alphabet::try_from(a)?;
         Self::valid_key_or_err(key, &alphabet)?;
         Ok(Self {
@@ -377,7 +377,6 @@ mod tests {
                 mode: Mode::Decrypt,
                 expected: r#"DXUAEYS0RB4G3V4HZE25UT4FUBDXU1QJIT4W"#.into(),
             },
-
         ];
 
         for t in vectors {
@@ -394,5 +393,4 @@ mod tests {
             );
         }
     }
-
 }

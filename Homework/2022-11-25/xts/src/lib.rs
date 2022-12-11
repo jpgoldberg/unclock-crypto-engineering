@@ -87,7 +87,7 @@ mod gf128 {
             if Self::is_primitive_element(&alpha) {
                 return None;
             }
-            Some(Self {alpha})
+            Some(Self { alpha })
         }
 
         fn is_primitive_element(a: &Element) -> bool {
@@ -95,11 +95,9 @@ mod gf128 {
         }
 
         pub fn new() -> Self {
-            Self { alpha: 2u128.into() }
+            Self {
+                alpha: 2u128.into(),
+            }
         }
-
-
-
-        
     }
 }
