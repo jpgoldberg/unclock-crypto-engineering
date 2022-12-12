@@ -106,16 +106,16 @@ Extrapolating to a hash of 256 and 512 bits doesn't really make sense, as the te
 
 |bits  | time    | k      |
 |------|---------|--------|
-|  8   | 6.7 µs  | 4.19e-07 |
+|  8   | 6.7 µs  | 4.08e-07 |
 | 16   | 102 µs  | 3.98e-07 |
-| 24   | 1.73 ms | 4.22e-07 |
-| 32   | 27.9 ms | 4.26e-07 |
+| 24   | 1.73 ms | 4.05e-07 |
+| 32   | 27.9 ms | 3.77e-07 |
 | 48   | 14.7 s  | 8.76e-07 |
 
-
-
-Rounding up to about 300s for a (bit longer than average, but 5 minutes is a rounder number) run of SHA-512-48 case on my gear,
-we plug in $t=300$ and $\ell = 48$ to get $k \approx  1.8\cdot10^{-5}$. (I am doing a lot of rounding.)
+So up through 32-bit prefixes we get $k \approx 4\cdot 10^{-7}$ some-weird-unit per second.
+It nearly double when we work on 48 bit hashes.
+I expect that the discontinuity is due to memory management,
+and that lookups in a `HashMap` hit a bump.
 
 So then for the 256-bit hashes we get something like $6 \cdot 10^{33}$ seconds,\
 and for the 512-bit hashes we get $2 \cdot 10^{77}$. I could try to put those in terms of trillions of universe ages, but the point is clear without doing so. 
