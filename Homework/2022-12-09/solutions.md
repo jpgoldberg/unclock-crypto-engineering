@@ -117,8 +117,9 @@ It nearly double when we work on 48 bit hashes.
 I expect that the discontinuity is due to memory management,
 and that lookups in a `HashMap` hit a bump.
 
-So then for the 256-bit hashes we get something like $6 \cdot 10^{33}$ seconds,\
-and for the 512-bit hashes we get $2 \cdot 10^{77}$. I could try to put those in terms of trillions of universe ages, but the point is clear without doing so. 
+So then for the 256-bit hashes we get something like 31 quadrillion ages of the universe,
+and for the 512-bit hashes we get $10^{53}$ ages of the universe.
+These are not really useful numbers.
 
 Questions that remain for me from this include
 
@@ -151,7 +152,11 @@ Is there a better way of doing what I have here to get my truncated `Vec<u8>`?
 
 ## Exercise 5.4
 
-How long to find a pre-image for a truncated 16 bit hash? Shouldn't be long at all.
+> How long to find a pre-image for a truncated 16 bit hash?
+
+On my system, it is approximately 19 milliseconds.
+For a 24 bit hash, about 5.4 seconds.
+I will not attempt a 32 bit hash, which should be on the order of 23 minutes.
 
 ## Exercise Compare hash speeds
 

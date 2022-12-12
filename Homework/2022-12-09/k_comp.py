@@ -19,4 +19,8 @@ def t_comp(ell: int, k: float) -> float:
 
 k = 4e-7
 
-print(t_comp(256, k))
+u_age = 13.7e9  # age of the universe in years.
+
+for bits in [256, 512]:
+    t = t_comp(bits, k)  # time in years
+    print(f't({bits}, {k} = {t/u_age:.2e} ages of the universe')
