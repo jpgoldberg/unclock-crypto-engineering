@@ -87,8 +87,7 @@ Going 0.000% of the way through the space
 With a 0.93 probability of getting a collision by this point
 ```
 
-I had spent a lot of time playing with criterion the first week,
-so I didn't work on that now. I believe that time and space requirements grow
+I believe that time and space requirements grow
 proportionally with $2^{\ell/2}$ 
 where $\ell$ is the length in bits of the truncated hash.
 So
@@ -102,7 +101,6 @@ Solving for $k$ gives us $k = 2^{-\frac{\ell}2}t$.
 Now that I am actually doing time testing under proper
 benchmarks instead of as unit tests, I have much faster times and more reliable measurements.
 
-Extrapolating to a hash of 256 and 512 bits doesn't really make sense, as the techniques used so far (in which all of the hashes and their pre-images reside in memory) won't hold. So such extrapolation can only offer a lower bound.
 
 |bits  | time    | k      |
 |------|---------|--------|
@@ -117,7 +115,14 @@ It nearly double when we work on 48 bit hashes.
 I expect that the discontinuity is due to memory management,
 and that lookups in a `HashMap` hit a bump.
 
-So then for the 256-bit hashes we get something like 31 quadrillion ages of the universe,
+Extrapolating to a hash of 256 and 512 bits doesn't really make sense,
+as the techniques used so far
+(in which all of the hashes and their pre-images reside in memory)
+won't hold.
+So such extrapolation can only offer a lower bound.
+
+
+The 256-bit hashes we get something like 31 quadrillion ages of the universe,
 and for the 512-bit hashes we get $10^{53}$ ages of the universe.
 These are not really useful numbers.
 
