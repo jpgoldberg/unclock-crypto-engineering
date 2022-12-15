@@ -5,7 +5,7 @@ use criterion::{criterion_group, criterion_main};
 use criterion::{BenchmarkId, Criterion};
 use hw3::ex5_4::*;
 
-fn bench_encrypt(c: &mut Criterion) {
+fn bench_pre_image(c: &mut Criterion) {
     let mut group = c.benchmark_group("Preimage size");
     group.sample_size(10);
 
@@ -18,5 +18,5 @@ fn bench_encrypt(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_encrypt);
+criterion_group!(benches, bench_pre_image);
 criterion_main!(benches);
